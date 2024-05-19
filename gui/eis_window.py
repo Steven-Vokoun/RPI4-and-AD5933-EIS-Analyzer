@@ -3,6 +3,7 @@ from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from eis import run_eis_experiment
+from eis import fit_eis_data
 import numpy as np
 import matplotlib
 
@@ -12,12 +13,16 @@ class EISWindow:
         self.controls_frame = controls_frame
         self.button_frame = button_frame
         self.spacing_type = tk.StringVar(value="logarithmic")
-        self.circuit_type = tk.StringVar(value="series RC")
+        self.circuit_type = tk.StringVar(value="Series RC")
         self.setup_ui()
         self.setup_plot()
+        self.setup_params_display()
         self.freq_data = None
         self.real_data = None
         self.imag_data = None
+        self.freq_fit_data = None
+        self.real_fit_data = None
+        self.imag_fit_data = None
 
     def setup_ui(self):
         self.setup_calibrate_button()
@@ -91,17 +96,21 @@ class EISWindow:
         self.freq_phase_button = ttk.Radiobutton(self.button_frame, text="Frequency vs Phase", variable=self.plot_type, value="freq_vs_phase", command=self.update_plot)
         self.freq_phase_button.pack(side=tk.LEFT, padx=10)
 
-        self.freq_phase_button = ttk.Radiobutton(self.button_frame, text="Real Vs Imaginary", variable=self.plot_type, value="real_vs_imag", command=self.update_plot)
-        self.freq_phase_button.pack(side=tk.LEFT, padx=10)
+        self.real_imag_button = ttk.Radiobutton(self.button_frame, text="Real Vs Imaginary", variable=self.plot_type, value="real_vs_imag", command=self.update_plot)
+        self.real_imag_button.pack(side=tk.LEFT, padx=10)
 
     def setup_circuit_type_dropdown(self):
         self.circuit_type_dropdown = ttk.Combobox(self.controls_frame, textvariable=self.circuit_type)
-        self.circuit_type_dropdown['values'] = ("series RC", "parallel RC", "Randles", "Randles with CPE")
+        self.circuit_type_dropdown['values'] = ("Series RC", "Parallel RC", "Randles", "Randles With CPE")
         self.circuit_type_dropdown.pack(pady=5, padx=10, anchor="n", fill=tk.X)
 
     def setup_run_fitting_button(self):
         self.run_fitting_button = ttk.Button(self.controls_frame, text="Run Fitting", command=self.run_fitting)
         self.run_fitting_button.pack(pady=5, padx=10, anchor="n", fill=tk.X)
+
+    def setup_params_display(self):
+        self.params_display = tk.Text(self.controls_frame, height=3, width=10)
+        self.params_display.pack(pady=5, padx=10, fill = tk.X)
 
     def calibrate_experiment(self):
         """Placeholder for calibrate EIS button functionality."""
@@ -118,16 +127,23 @@ class EISWindow:
         run_eis_experiment(self.update_data, max_freq, min_freq, spacing_type, num_steps)
 
     def run_fitting(self):
-        """Placeholder for run fitting button functionality."""
-        pass
+        circuit = self.circuit_type.get()
+        real_fit, imag_fit, fitted_params = fit_eis_data(self.freq_data, self.real_data, self.imag_data, circuit)
+        self.update_fit_data(real_fit, imag_fit, fitted_params)
 
     def update_data(self, freq_data, real_data, imag_data):
         # Update data variables
         self.freq_data = freq_data
         self.real_data = real_data
         self.imag_data = imag_data
-
-        # Update plot
+        self.update_plot()
+    
+    def update_fit_data(self, real_fit, imag_fit, fitted_params):
+        self.freq_fit_data = self.freq_data
+        self.real_fit_data = real_fit
+        self.imag_fit_data = imag_fit
+        self.params_display.delete(1.0, tk.END)
+        self.params_display.insert(tk.END, f"Fitted Parameters:\n{fitted_params}")
         self.update_plot()
 
     def update_plot(self):
@@ -142,7 +158,9 @@ class EISWindow:
 
     def plot_freq_vs_mag(self):
         self.ax.clear()
-        self.ax.plot(self.freq_data, np.sqrt(self.real_data**2 + self.imag_data**2))
+        self.ax.scatter(self.freq_data, np.sqrt(self.real_data**2 + self.imag_data**2), s=5)
+        if self.freq_fit_data is not None:
+            self.ax.plot(self.freq_fit_data, np.sqrt(self.real_fit_data**2 + self.imag_fit_data**2), color='red')
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Magnitude")
         self.ax.set_title("Frequency vs Magnitude")
@@ -150,7 +168,9 @@ class EISWindow:
 
     def plot_freq_vs_phase(self):
         self.ax.clear()
-        self.ax.plot(self.freq_data, np.arctan(self.imag_data/self.real_data))
+        self.ax.scatter(self.freq_data, np.rad2deg(np.arctan(self.imag_data/self.real_data)), s=5)
+        if self.freq_fit_data is not None:
+            self.ax.plot(self.freq_fit_data, np.rad2deg(np.arctan(self.imag_fit_data/self.real_fit_data)), color='red')
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Phase")
         self.ax.set_title("Frequency vs Phase")
@@ -158,7 +178,9 @@ class EISWindow:
 
     def plot_real_vs_imag(self):
         self.ax.clear()
-        self.ax.plot(self.real_data, -self.imag_data)
+        self.ax.scatter(self.real_data, -self.imag_data, s=5)
+        if self.real_fit_data is not None:
+            self.ax.plot(self.real_fit_data, -self.imag_fit_data, color='red')
         self.ax.set_xlabel("Real")
         self.ax.set_ylabel("Imaginary")
         self.ax.set_title("Real vs Imaginary")
@@ -180,6 +202,8 @@ class EISWindow:
         self.start_button.destroy()
         self.freq_mag_button.destroy()
         self.freq_phase_button.destroy()
+        self.real_imag_button.destroy()
         self.spacing_type_frame.destroy()
         self.circuit_type_dropdown.destroy()
         self.run_fitting_button.destroy()
+        self.params_display.destroy()
