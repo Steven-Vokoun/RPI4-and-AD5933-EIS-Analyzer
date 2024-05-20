@@ -3,6 +3,7 @@ import numpy as np
 import impedance as imp
 from impedance.models.circuits import CustomCircuit
 
+
 def calculate_impedance(frequencies, Rs, Rp, C):
     omega = 2 * np.pi * frequencies
     Z_R = Rs
