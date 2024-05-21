@@ -1,11 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
+import os
+#from AD5933_Library import AD5933
 from gui.eis_window import EISWindow
 from gui.cv_window import CVWindow
 from gui.time_window import TimeWindow
-import tkinter as tk
-from tkinter import ttk, filedialog
-import os
 
 class MainApplication(tk.Tk):
     def __init__(self):
@@ -13,43 +12,44 @@ class MainApplication(tk.Tk):
         self.title("Experiment GUI")
         self.geometry("800x480")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
-        
+        self.current_window = None
+        self.setup_main_frame()
+        self.setup_toolbar()
+        self.setup_frames()
+        self.default_to_eis_window()
+
+    def setup_main_frame(self):
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.toolbar_frame = tk.Frame(self.main_frame)
-        self.toolbar_frame.grid(row=0, column=0, columnspan=2, sticky="ew")
-
-        self.plot_frame = tk.Frame(self.main_frame)
-        self.plot_frame.grid(row=1, column=0, sticky="nsew")
-
-        self.controls_frame = tk.Frame(self.main_frame)
-        self.controls_frame.grid(row=1, column=1, sticky="nsew")
-
         self.main_frame.columnconfigure(0, weight=3)
         self.main_frame.columnconfigure(1, weight=1)
         self.main_frame.rowconfigure(1, weight=1)
 
-        self.controls_frame.grid_propagate(False)
-        self.controls_frame.config(width=200)
+    def setup_toolbar(self):
+        self.toolbar_frame = tk.Frame(self.main_frame)
+        self.toolbar_frame.grid(row=0, column=0, columnspan=2, sticky="ew")
 
-        self.button_frame = ttk.Frame(self.main_frame)
-        self.button_frame.grid(row=2, column=0, columnspan=2, sticky="ew")
-
-        self.current_window = None
-        self.setup_ui()
-        self.default_to_eis_window()
-
-    def setup_ui(self):
-        self.label = ttk.Label(self.toolbar_frame, text="Select Experiment:")
-        self.label.pack(side=tk.LEFT, padx=10)
+        label = ttk.Label(self.toolbar_frame, text="Select Experiment:")
+        label.pack(side=tk.LEFT, padx=10)
 
         self.dropdown = ttk.Combobox(self.toolbar_frame, values=["EIS", "CV", "Time"])
         self.dropdown.pack(side=tk.LEFT, padx=10)
         self.dropdown.bind("<<ComboboxSelected>>", self.on_selection_change)
 
-        self.readme_button = ttk.Button(self.toolbar_frame, text="Open README", command=self.open_readme)
-        self.readme_button.pack(side=tk.LEFT, padx=10)
+        readme_button = ttk.Button(self.toolbar_frame, text="Open README", command=self.open_readme)
+        readme_button.pack(side=tk.LEFT, padx=10)
+
+    def setup_frames(self):
+        self.plot_frame = tk.Frame(self.main_frame)
+        self.plot_frame.grid(row=1, column=0, sticky="nsew")
+
+        self.controls_frame = tk.Frame(self.main_frame)
+        self.controls_frame.grid(row=1, column=1, sticky="nsew")
+        self.controls_frame.grid_propagate(False)
+        self.controls_frame.config(width=200)
+
+        self.button_frame = ttk.Frame(self.main_frame)
+        self.button_frame.grid(row=2, column=0, columnspan=2, sticky="ew")
 
     def default_to_eis_window(self):
         self.dropdown.set("EIS")
@@ -84,6 +84,7 @@ class MainApplication(tk.Tk):
 
     def on_close(self):
         os._exit(0)
+
 if __name__ == "__main__":
     app = MainApplication()
     app.mainloop()
