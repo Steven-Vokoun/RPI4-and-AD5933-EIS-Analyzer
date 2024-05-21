@@ -84,6 +84,8 @@ class AD5933:
         self.clk = clk
         self.set_clock_source(clk_source)
         self.set_pga_gain(PGA_Gain)
+        self.set_increment_number(0)
+        self.set_settling_time_cycles(100)
 
     def write_register(self, reg, value):
         self.bus.write_byte_data(DEV_ADDR, reg, value)
@@ -229,9 +231,9 @@ class AD5933:
         return real_data, imag_data
 
     def run_freq_sweep(self, freq):
-        sensor.set_start_frequency(freq)
+        self.set_start_frequency(freq)
         self.send_cmd(STANDBY)
-        sensor.send_cmd(INIT_WITH_START_FREQ)
+        self.send_cmd(INIT_WITH_START_FREQ)
         self.send_cmd(START_FREQ_SWEEP)
         self.poll_status_register('real_imag')
         return self.get_impedance_data() #Return the real and imaginary data
@@ -255,12 +257,13 @@ class AD5933:
         real_data = np.array(real_data)
         imag_data = np.array(imag_data)
 
-        sensor.send_cmd(STANDBY)
+        self.send_cmd(STANDBY)
 
         return freqs, real_data, imag_data
     
 
     def Calculate_Impedance_Mag_At_Frequency(self, Impedance, freq):
+        s = sp.symbols('s')
         if isinstance(Impedance, int) or isinstance(Impedance, float):
             return Impedance
         elif isinstance(Impedance, complex):
@@ -318,6 +321,7 @@ class AD5933:
             GainFactors.append(gf)
             Sys_Phases.append(sys_phase)
         
+        self.export_calibration_data(freqs, GainFactors, Sys_Phases)
         return freqs, GainFactors, Sys_Phases
 
     def Adjust_Magnitude_Return_abs_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, GainFactors):
@@ -344,3 +348,10 @@ class AD5933:
     def import_calibration_data(self):
         data = np.loadtxt('calibration_data.csv', delimiter=',')
         return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
+    
+    def Sweep_And_Adjust(self, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
+        freqs, real, imag = self.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
+        Cal_Freqs, Gain_Factors, Sys_Phases = self.import_calibration_data()
+        Magnitude = self.Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, Cal_Freqs, Gain_Factors)
+        Phase = self.Adjust_Phase_Return_Impedance(freqs, real, imag, Cal_Freqs, Sys_Phases)
+        return freqs, Magnitude, Phase

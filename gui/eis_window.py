@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib
 
 class EISWindow:
-    def __init__(self, plot_frame, controls_frame, button_frame):
+    def __init__(self, plot_frame, controls_frame, button_frame, sensor):
         self.plot_frame = plot_frame
         self.controls_frame = controls_frame
         self.button_frame = button_frame
@@ -113,26 +113,25 @@ class EISWindow:
         self.params_display.pack(pady=5, padx=10, fill = tk.X)
 
     def calibrate_experiment(self):
-        """Placeholder for calibrate EIS button functionality."""
-        pass
+        self.sensor.Calibration_Sweep(220_000, 5_000, 105_000, 200, spacing_type='linear')
 
     def start_experiment(self):
         # Retrieve and validate the input values
-        max_freq = int(self.max_freq_entry.get())
-        min_freq = int(self.min_freq_entry.get())
-        spacing_type = self.spacing_type.get()
-        num_steps = int(self.step_size_entry.get())
-
+        #max_freq = int(self.max_freq_entry.get())
+        #min_freq = int(self.min_freq_entry.get())
+        #spacing_type = self.spacing_type.get()
+        #num_steps = int(self.step_size_entry.get())
         # Implement the logic to handle these parameters in the experiment
-        run_eis_experiment(self.update_data, max_freq, min_freq, spacing_type, num_steps)
-
+        #run_eis_experiment(self.update_data, max_freq, min_freq, spacing_type, num_steps)
+        self.freq_data, self.real_data, self.imag_data = self.sensor.Sweep_And_Adjust(10_000, 100_000, 200, spacing_type='linear')
+        self.update_plot()
+        
     def run_fitting(self):
         circuit = self.circuit_type.get()
         real_fit, imag_fit, fitted_params = fit_eis_data(self.freq_data, self.real_data, self.imag_data, circuit)
         self.update_fit_data(real_fit, imag_fit, fitted_params)
 
     def update_data(self, freq_data, real_data, imag_data):
-        # Update data variables
         self.freq_data = freq_data
         self.real_data = real_data
         self.imag_data = imag_data
