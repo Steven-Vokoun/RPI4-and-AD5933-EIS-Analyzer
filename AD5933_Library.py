@@ -99,29 +99,29 @@ class AD5933:
     def send_cmd(self, cmd):
         control_reg = self.read_register(CONTROL_REG1)
         control_reg &= 0x0F
-        if cmd == INIT_WITH_START_FREQ:
+        if cmd == INIT_WITH_START_FREQ or cmd == 'INIT_WITH_START_FREQ':
             control_reg |= INIT_WITH_START_FREQ
             self.write_register(CONTROL_REG1, control_reg)
-        elif cmd == START_FREQ_SWEEP:
+        elif cmd == START_FREQ_SWEEP or cmd == 'START_FREQ_SWEEP':
             control_reg |= START_FREQ_SWEEP
             self.write_register(CONTROL_REG1, control_reg)
-        elif cmd == INCREMENT_FREQ:
+        elif cmd == INCREMENT_FREQ or cmd == 'INCREMENT_FREQ':
             control_reg |= INCREMENT_FREQ
             self.write_register(CONTROL_REG1, control_reg)
-        elif cmd == REPEAT_FREQ:
+        elif cmd == REPEAT_FREQ or cmd == 'REPEAT_FREQ':
             control_reg |= REPEAT_FREQ
             self.write_register(CONTROL_REG1, control_reg)
-        elif cmd == MEASURE_TEMP:
+        elif cmd == MEASURE_TEMP or cmd == 'MEASURE_TEMP':
             control_reg |= MEASURE_TEMP
             self.write_register(CONTROL_REG1, control_reg)
-        elif cmd == POWER_DOWN:
+        elif cmd == POWER_DOWN or cmd == 'POWER_DOWN':
             control_reg |= POWER_DOWN
             self.write_register(CONTROL_REG1, control_reg)
-        elif cmd == STANDBY:
+        elif cmd == STANDBY or cmd == 'STANDBY':
             control_reg |= STANDBY
             self.write_register(CONTROL_REG1, control_reg)
         else:
-            raise ValueError('Invalid Command')
+            raise ValueError('Invalid Command to send_cmd')
 
     def reset(self):
         control_reg = self.read_register(CONTROL_REG0)

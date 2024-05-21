@@ -64,7 +64,7 @@ class MainApplication(tk.Tk):
 
     def setup_connections(self):
         self.sensor = AD5933()
-        self.temperature = self.sensor.get_temperature()
+        self.temperature = self.sensor.measure_temperature()
         self.sensor.send_cmd('STANDBY')
 
     def default_to_eis_window(self):
