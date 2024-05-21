@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-from eis import run_eis_experiment
 from eis import fit_eis_data
 import numpy as np
 import matplotlib
@@ -23,6 +22,7 @@ class EISWindow:
         self.freq_fit_data = None
         self.real_fit_data = None
         self.imag_fit_data = None
+        self.sensor = sensor
 
     def setup_ui(self):
         self.setup_calibrate_button()
@@ -53,7 +53,7 @@ class EISWindow:
         self.min_freq_label = tk.Label(self.freq_frame, text="Min Frequency:")
         self.min_freq_label.grid(row=0, column=0)
         self.min_freq_entry = tk.Entry(self.freq_frame, width=10)
-        self.min_freq_entry.insert(0, "100")
+        self.min_freq_entry.insert(0, "10000")
         self.min_freq_entry.grid(row=0, column=1)
 
         self.max_freq_label = tk.Label(self.freq_frame, text="Max Frequency:")
@@ -113,17 +113,18 @@ class EISWindow:
         self.params_display.pack(pady=5, padx=10, fill = tk.X)
 
     def calibrate_experiment(self):
-        self.sensor.Calibration_Sweep(220_000, 5_000, 105_000, 200, spacing_type='linear')
+        max_freq = int(self.max_freq_entry.get())
+        min_freq = int(self.min_freq_entry.get())
+        num_steps = int(self.step_size_entry.get())
+        spacing_type = self.spacing_type.get()
+        self.sensor.Calibration_Sweep(220_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
 
     def start_experiment(self):
-        # Retrieve and validate the input values
         max_freq = int(self.max_freq_entry.get())
         min_freq = int(self.min_freq_entry.get())
         spacing_type = self.spacing_type.get()
         num_steps = int(self.step_size_entry.get())
-        # Implement the logic to handle these parameters in the experiment
-        #run_eis_experiment(self.update_data, max_freq, min_freq, spacing_type, num_steps)
-        self.freq_data, self.real_data, self.imag_data = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type='spacing_type')
+        self.freq_data, self.real_data, self.imag_data = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.update_plot()
 
     def run_fitting(self):
@@ -156,6 +157,9 @@ class EISWindow:
             self.plot_real_vs_imag()
 
     def plot_freq_vs_mag(self):
+        print(self.freq_data)
+        print(self.real_data)
+        print(self.imag_data)
         self.ax.clear()
         self.ax.scatter(self.freq_data, np.sqrt(self.real_data**2 + self.imag_data**2), s=5)
         if self.freq_fit_data is not None:

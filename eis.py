@@ -11,7 +11,7 @@ def calculate_impedance(frequencies, Rs, Rp, C):
     Z = Z_R + Z_C
     return Z.real, Z.imag
 
-def run_eis_experiment(update_data_callback, max_freq, min_freq, spacing_type, num_steps):
+def run_demo_EIS_experiment(update_data_callback, max_freq, min_freq, spacing_type, num_steps):
     if spacing_type == 'logarithmic':
         frequencies = np.logspace(np.log10(min_freq), np.log10(max_freq), num = num_steps)
     else:

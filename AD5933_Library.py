@@ -337,7 +337,7 @@ class AD5933:
     def Adjust_Phase_Return_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, Sys_Phases):
         if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
             raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
-        Phases_Measured = np.rad2deg(np.arctan(imag/real))
+        Phases_Measured = np.rad2deg(np.arctan2(imag,real))
         interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
         adjusted_phases = [phase - sys_phase + 180 for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
         return adjusted_phases
@@ -355,4 +355,9 @@ class AD5933:
         Cal_Freqs, Gain_Factors, Sys_Phases = self.import_calibration_data()
         Magnitude = self.Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, Cal_Freqs, Gain_Factors)
         Phase = self.Adjust_Phase_Return_Impedance(freqs, real, imag, Cal_Freqs, Sys_Phases)
-        return freqs, Magnitude, Phase
+        freqs = np.array(freqs)
+        Magnitude = np.array(Magnitude)
+        Phase = np.array(Phase)
+        real = Magnitude * np.cos(np.deg2rad(Phase))
+        imag = Magnitude * np.sin(np.deg2rad(Phase))
+        return freqs, real, imag
