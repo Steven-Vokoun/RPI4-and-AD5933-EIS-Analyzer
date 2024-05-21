@@ -26,12 +26,10 @@ class MainApplication(tk.Tk):
         self.controls_frame = tk.Frame(self.main_frame)
         self.controls_frame.grid(row=1, column=1, sticky="nsew")
 
-        # Adjust column weights to balance the layout
         self.main_frame.columnconfigure(0, weight=3)
         self.main_frame.columnconfigure(1, weight=1)
         self.main_frame.rowconfigure(1, weight=1)
 
-        # Set a minimum width for the controls frame
         self.controls_frame.grid_propagate(False)
         self.controls_frame.config(width=200)
 

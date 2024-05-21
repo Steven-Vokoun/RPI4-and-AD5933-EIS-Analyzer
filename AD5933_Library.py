@@ -1,6 +1,8 @@
 from smbus2 import SMBus
 import matplotlib.pyplot as plt
 import numpy as np
+import sympy as sp
+
 
 #Device Address
 DEV_ADDR =              0x0D  # 7 bit address
@@ -65,9 +67,9 @@ CLOCK_SEL_EXTERNAL=     (0x01 << 3)
 CLOCK_SEL_INTERNAL =    (0x00 << 3)
 
 # Status Register
-TEMP_VALID =             (0x01 << 0)    
-REAL_IMAG_VALID =        (0x01 << 1)
-FREQ_SWEEP_DONE =        (0x01 << 2)
+TEMP_VALID =             (0x01) 
+REAL_IMAG_VALID =        (0x02)
+FREQ_SWEEP_DONE =        (0x04)
 
 #Settling Time
 SETTLING_TIME_1x =       (0 << 9)
@@ -87,11 +89,11 @@ class AD5933:
         self.bus.write_byte_data(DEV_ADDR, reg, value)
     def read_register(self, reg):
         return self.bus.read_byte_data(DEV_ADDR, reg)
-    def read_registers(self, reg, length):
-        return self.bus.read_i2c_block_data(DEV_ADDR, reg, length)
     def write_registers(self, reg, data):
-        self.bus.write_i2c_block_data(DEV_ADDR, reg, data)
-    
+        length = len(data)
+        for i in range(length):
+            self.bus.write_byte_data(DEV_ADDR, reg + i, data[i])
+
     def send_cmd(self, cmd):
         control_reg = self.read_register(CONTROL_REG1)
         control_reg &= 0x0F
@@ -213,17 +215,25 @@ class AD5933:
         else:
             raise ValueError('Invalid Status Poll Type')
     
+    def twos_complement_to_int(self, value, bits):
+        """Convert a 2's complement number to an integer."""
+        if value & (1 << (bits - 1)):
+            value -= 1 << bits
+        return value
+    
     def get_impedance_data(self):
-        real_data = self.read_registers(REAL_DATA_REG1, 2)
-        real_data = int.from_bytes(real_data, 'big')
-        imag_data = self.read_registers(IMG_DATA_REG1, 2)
-        imag_data = int.from_bytes(imag_data, 'big')
+        real_data = ((self.read_register(REAL_DATA_REG1) << 8) | self.read_register(REAL_DATA_REG0))
+        real_data = self.twos_complement_to_int(real_data, 16)
+        imag_data = ((self.read_register(IMG_DATA_REG1) << 8) | self.read_register(IMG_DATA_REG0))
+        imag_data = self.twos_complement_to_int(imag_data, 16)
         return real_data, imag_data
 
     def run_freq_sweep(self, freq):
-        self.set_start_frequency(freq)
+        sensor.set_start_frequency(freq)
+        self.send_cmd(STANDBY)
+        sensor.send_cmd(INIT_WITH_START_FREQ)
         self.send_cmd(START_FREQ_SWEEP)
-        self.poll_status_register('freq_sweep')
+        self.poll_status_register('real_imag')
         return self.get_impedance_data() #Return the real and imaginary data
 
     def Complete_Sweep(self, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
@@ -242,23 +252,95 @@ class AD5933:
             real_data.append(real)
             imag_data.append(imag)
         
-        # Convert lists to numpy arrays
         real_data = np.array(real_data)
         imag_data = np.array(imag_data)
-        
+
+        sensor.send_cmd(STANDBY)
+
         return freqs, real_data, imag_data
+    
 
+    def Calculate_Impedance_Mag_At_Frequency(self, Impedance, freq):
+        if isinstance(Impedance, int) or isinstance(Impedance, float):
+            return Impedance
+        elif isinstance(Impedance, complex):
+            return abs(Impedance)
+        elif isinstance(Impedance, sp.Expr):
+            return abs(Impedance.subs(s, 1j * 2 * np.pi * freq))
+        else:
+            raise ValueError("Invalid type for Impedance_Mag")
+        
+    def Calculate_Impedance_Phase_At_Frequency(self, Impedance, freq):
+        s = sp.symbols('s')
+        if isinstance(Impedance, int) or isinstance(Impedance, float):
+            return 0
+        elif isinstance(Impedance, complex):
+            return np.angle(Impedance, deg = True)
+        elif isinstance(Impedance, sp.Expr):
+            return np.angle(Impedance.subs(s, 1j * 2 * np.pi * freq), deg = True)
+        else:
+            raise ValueError("Invalid type for Impedance_Phase")
+        
+    def find_phase_arctan(self, real, imag):
+        if real > 0 and imag > 0:
+            return (np.arctan(imag/real))*(180/np.pi)
+        elif real < 0 and imag > 0:
+            return 180 + (np.arctan(imag/real))*(180/np.pi)
+        elif real < 0 and imag < 0:
+            return 180 + (np.arctan(imag/real))*(180/np.pi)
+        elif real > 0 and imag < 0:
+            return 360 + (np.arctan(imag/real))*(180/np.pi)
+        else:
+            ValueError('Invalid Input')
 
-sensor = AD5933()
-sensor.reset()
-sensor.set_clock_source('internal')
-sensor.set_pga_gain(1)
-sensor.set_increment_number(0)
-sensor.set_settling_time_cycles(20)
-freqs, real_data, imag_data = sensor.Complete_Sweep(10_000,50_000,20,'logarithmic')
+    def Calibrate_Single_Point(self, Impedance, freq):
+        Impedance_Magnitude = self.Calculate_Impedance_Mag_At_Frequency(Impedance, freq)
+        Impedance_Phase = self.Calculate_Impedance_Phase_At_Frequency(Impedance, freq)
+        real, imag = self.run_freq_sweep(freq)
+        mag = np.sqrt((real**2) + (imag **2))
+        GainFactor = 1/(Impedance_Magnitude * mag)
+        Sys_Phase = self.find_phase_arctan(real, imag) - Impedance_Phase
+        return GainFactor, Sys_Phase
 
-plt.plot(freqs, np.sqrt(real_data**2 + imag_data**2))
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Impedance Magnitude')
-plt.title('Impedance vs Frequency')
-plt.show()
+    def Calibration_Sweep(self, Impedance, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
+        GainFactors = []
+        Sys_Phases = []
+
+        if spacing_type == 'logarithmic':
+            freqs = np.logspace(np.log10(start_freq), np.log10(end_freq), num=num_steps)
+        elif spacing_type == 'linear':
+            freqs = np.linspace(start_freq, end_freq, num=num_steps)
+        else:
+            raise ValueError('Invalid Frequency Spacing Type')
+
+        for freq in freqs:
+            gf, sys_phase = self.Calibrate_Single_Point(Impedance, freq)
+            GainFactors.append(gf)
+            Sys_Phases.append(sys_phase)
+        
+        return freqs, GainFactors, Sys_Phases
+
+    def Adjust_Magnitude_Return_abs_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, GainFactors):
+        if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
+            raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
+        Magnitudes_Measured = np.sqrt(real**2 + imag**2)
+        interpolated_gain_factors = np.interp(Freqs_Measured, Freqs_Calibration, GainFactors)
+        adjusted_magnitudes = [mag * gf for mag, gf in zip(Magnitudes_Measured, interpolated_gain_factors)]
+        adjusted_impedances = [1/mag for mag in adjusted_magnitudes]
+        return adjusted_impedances
+
+    def Adjust_Phase_Return_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, Sys_Phases):
+        if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
+            raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
+        Phases_Measured = np.rad2deg(np.arctan(imag/real))
+        interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
+        adjusted_phases = [phase - sys_phase + 180 for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
+        return adjusted_phases
+    
+    def export_calibration_data(self, freqs, gain_factors, sys_phases):
+        data = np.array([freqs, gain_factors, sys_phases])
+        np.savetxt('calibration_data.csv', data, delimiter=',')  
+
+    def import_calibration_data(self):
+        data = np.loadtxt('calibration_data.csv', delimiter=',')
+        return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
