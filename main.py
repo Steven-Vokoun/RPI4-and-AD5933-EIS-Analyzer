@@ -12,8 +12,8 @@ class MainApplication(tk.Tk):
         self.title("Experiment GUI")
         self.overrideredirect(True)
         self.geometry("800x480")
-        self.attributes('-fullscreen', True)
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        #self.attributes('-fullscreen', True)
+        #self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.current_window = None
         self.setup_main_frame()
         self.setup_connections()        
@@ -30,8 +30,8 @@ class MainApplication(tk.Tk):
 
         self.bind("<Escape>", self.on_close)
 
-    def on_close(self, event = None):
-        self.destroy()
+    #def on_close(self, event = None):
+    #    self.destroy()
 
     def setup_toolbar(self):
         self.toolbar_frame = tk.Frame(self.main_frame)

@@ -306,6 +306,7 @@ class AD5933:
         return GainFactor, Sys_Phase
 
     def Calibration_Sweep(self, Impedance, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
+        print('Calibrating sweep')
         GainFactors = []
         Sys_Phases = []
 
