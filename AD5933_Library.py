@@ -341,7 +341,7 @@ class AD5933:
         interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
         adjusted_phases = [phase - sys_phase + 180 for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
         return adjusted_phases
-    
+        
     def export_calibration_data(self, freqs, gain_factors, sys_phases):
         data = np.array([freqs, gain_factors, sys_phases])
         np.savetxt('calibration_data.csv', data, delimiter=',')  
@@ -360,4 +360,4 @@ class AD5933:
         Phase = np.array(Phase)
         real = Magnitude * np.cos(np.deg2rad(Phase))
         imag = Magnitude * np.sin(np.deg2rad(Phase))
-        return freqs, real, imag
+        return freqs, real, imag, Phase

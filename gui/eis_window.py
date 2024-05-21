@@ -19,6 +19,7 @@ class EISWindow:
         self.freq_data = None
         self.real_data = None
         self.imag_data = None
+        self.phase_data = None
         self.freq_fit_data = None
         self.real_fit_data = None
         self.imag_fit_data = None
@@ -124,7 +125,7 @@ class EISWindow:
         min_freq = int(self.min_freq_entry.get())
         spacing_type = self.spacing_type.get()
         num_steps = int(self.step_size_entry.get())
-        self.freq_data, self.real_data, self.imag_data = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.freq_data, self.real_data, self.imag_data, self.phase = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.update_plot()
 
     def run_fitting(self):
@@ -157,9 +158,6 @@ class EISWindow:
             self.plot_real_vs_imag()
 
     def plot_freq_vs_mag(self):
-        print(self.freq_data)
-        print(self.real_data)
-        print(self.imag_data)
         self.ax.clear()
         self.ax.scatter(self.freq_data, np.sqrt(self.real_data**2 + self.imag_data**2), s=5)
         if self.freq_fit_data is not None:
@@ -173,7 +171,7 @@ class EISWindow:
         self.ax.clear()
         self.ax.scatter(self.freq_data, np.rad2deg(np.arctan(self.imag_data/self.real_data)), s=5)
         if self.freq_fit_data is not None:
-            self.ax.plot(self.freq_fit_data, np.rad2deg(np.arctan(self.imag_fit_data/self.real_fit_data)), color='red')
+            self.ax.plot(self.freq_fit_data, self.phase, color='red')
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Phase")
         self.ax.set_title("Frequency vs Phase")
