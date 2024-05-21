@@ -117,15 +117,15 @@ class EISWindow:
 
     def start_experiment(self):
         # Retrieve and validate the input values
-        #max_freq = int(self.max_freq_entry.get())
-        #min_freq = int(self.min_freq_entry.get())
-        #spacing_type = self.spacing_type.get()
-        #num_steps = int(self.step_size_entry.get())
+        max_freq = int(self.max_freq_entry.get())
+        min_freq = int(self.min_freq_entry.get())
+        spacing_type = self.spacing_type.get()
+        num_steps = int(self.step_size_entry.get())
         # Implement the logic to handle these parameters in the experiment
         #run_eis_experiment(self.update_data, max_freq, min_freq, spacing_type, num_steps)
-        self.freq_data, self.real_data, self.imag_data = self.sensor.Sweep_And_Adjust(10_000, 100_000, 200, spacing_type='linear')
+        self.freq_data, self.real_data, self.imag_data = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type='spacing_type')
         self.update_plot()
-        
+
     def run_fitting(self):
         circuit = self.circuit_type.get()
         real_fit, imag_fit, fitted_params = fit_eis_data(self.freq_data, self.real_data, self.imag_data, circuit)
