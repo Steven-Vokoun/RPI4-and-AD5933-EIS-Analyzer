@@ -1,7 +1,26 @@
-from smbus2 import SMBus
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
+import os
+
+try:
+    from smbus2 import SMBus
+except ImportError:
+    if os.name == 'nt':  # Check if the operating system is Windows
+        print("smbus2 library is not supported on Windows, using dummy class instead...")
+        class SMBus:
+            def __init__(self, *args, **kwargs):
+                pass
+            def read_byte_data(self, *args, **kwargs):
+                return 0x00
+            def write_byte_data(self, *args, **kwargs):
+                pass
+            def read_i2c_block_data(self, *args, **kwargs):
+                return [0x00]*4
+        smbus2 = SMBus
+    else:
+        ValueError("smbus2 library is not installed")
+
 
 
 #Device Address
@@ -166,7 +185,6 @@ class AD5933:
         else:
             temp_data = temp_data - 16384
             temp_data = temp_data / 32
-        print(temp_data)
         return temp_data
     
     def set_start_frequency(self, freq):
@@ -303,12 +321,10 @@ class AD5933:
         mag = np.sqrt((real**2) + (imag **2))
         GainFactor = 1/(Impedance_Magnitude * mag)
         Sys_Phase = self.find_phase_arctan(real, imag)
-        print('System Phase: ', Sys_Phase, 'Impedance Phase: ', Impedance_Phase)
         Sys_Phase = Sys_Phase - Impedance_Phase
         return GainFactor, Sys_Phase
 
     def Calibration_Sweep(self, Impedance, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
-        print('Calibrating sweep')
         GainFactors = []
         Sys_Phases = []
 
@@ -340,10 +356,8 @@ class AD5933:
         if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
             raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
         Phases_Measured = np.rad2deg(np.arctan2(imag,real))
-        print('Measured Phases: ', Phases_Measured)
         interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
         adjusted_phases = [phase - sys_phase for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
-        print('Adjusted Phases: ', adjusted_phases)
         return adjusted_phases
         
     def export_calibration_data(self, freqs, gain_factors, sys_phases):

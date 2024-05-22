@@ -3,8 +3,11 @@ from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from eis import fit_eis_data
+from eis import export_to_usb
+from eis import run_demo_EIS_experiment
 import numpy as np
 import matplotlib
+import os
 
 class EISWindow:
     def __init__(self, plot_frame, controls_frame, button_frame, sensor):
@@ -13,9 +16,6 @@ class EISWindow:
         self.button_frame = button_frame
         self.spacing_type = tk.StringVar(value="logarithmic")
         self.circuit_type = tk.StringVar(value="Series RC")
-        self.setup_ui()
-        self.setup_plot()
-        self.setup_params_display()
         self.freq_data = None
         self.real_data = None
         self.imag_data = None
@@ -23,7 +23,8 @@ class EISWindow:
         self.freq_fit_data = None
         self.real_fit_data = None
         self.imag_fit_data = None
-        self.sensor = sensor
+        self.sensor = sensor        
+        self.setup_ui()
 
     def setup_ui(self):
         self.setup_calibrate_button()
@@ -34,6 +35,11 @@ class EISWindow:
         self.setup_circuit_type_dropdown()
         self.setup_run_fitting_button()
         self.setup_plot_type_buttons()
+        self.setup_plot()
+        self.setup_params_display()
+        self.setup_export_button()
+        self.setup_notification_box()
+        
 
     def setup_plot(self):
         matplotlib.rcParams['font.size'] = 5
@@ -112,26 +118,53 @@ class EISWindow:
     def setup_params_display(self):
         self.params_display = tk.Text(self.controls_frame, height=3, width=10)
         self.params_display.pack(pady=5, padx=10, fill = tk.X)
+        self.params_display.insert(tk.END, 'Fitting Parameters Window:')
+
+    def setup_export_button(self):
+        self.export_button = ttk.Button(self.controls_frame, text="Export Data", command=self.export_data)
+        self.export_button.pack(pady=5, padx=10, anchor="n", fill=tk.X)
+    
+    def export_data(self):
+        export_to_usb(self.send_notification, self.freq_data, self.real_data, self.imag_data)
+    
+    def setup_notification_box(self):
+        self.notification_box = tk.Text(self.controls_frame, height=4, width=10)
+        self.notification_box.pack(pady=5, padx=10, fill = tk.X)
+        self.notification_box.insert(tk.END, "Notifications:")
+
+    def send_notification(self, message):
+        print(message)
+        message = "\n" + message
+        self.notification_box.insert(tk.END, message)
+        self.notification_box.see(tk.END)
 
     def calibrate_experiment(self):
         max_freq = int(self.max_freq_entry.get())
         min_freq = int(self.min_freq_entry.get())
         num_steps = int(self.step_size_entry.get())
         spacing_type = self.spacing_type.get()
+        self.send_notification("Calibrating EIS")
         self.sensor.Calibration_Sweep(220_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.send_notification("Calibration Complete")
 
     def start_experiment(self):
-        max_freq = int(self.max_freq_entry.get())
-        min_freq = int(self.min_freq_entry.get())
-        spacing_type = self.spacing_type.get()
-        num_steps = int(self.step_size_entry.get())
-        self.freq_data, self.real_data, self.imag_data, self.phase = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
-        self.update_plot()
+        if os.name == 'nt':
+            run_demo_EIS_experiment(self.update_data, 10000, 100000, 'linear', 200)
+            self.send_notification("Demo Experiment Complete")
+        else:
+            max_freq = int(self.max_freq_entry.get())
+            min_freq = int(self.min_freq_entry.get())
+            spacing_type = self.spacing_type.get()
+            num_steps = int(self.step_size_entry.get())
+            self.freq_data, self.real_data, self.imag_data, self.phase = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
+            self.send_notification("Experiment Complete")
+            self.update_plot()
 
     def run_fitting(self):
         circuit = self.circuit_type.get()
-        real_fit, imag_fit, fitted_params = fit_eis_data(self.freq_data, self.real_data, self.imag_data, circuit)
-        self.update_fit_data(real_fit, imag_fit, fitted_params)
+        real_fit, imag_fit, fitted_params, Labels = fit_eis_data(self.freq_data, self.real_data, self.imag_data, circuit)
+        self.update_fit_data(real_fit, imag_fit, fitted_params, Labels)
+        self.send_notification("Fitting Complete")
 
     def update_data(self, freq_data, real_data, imag_data):
         self.freq_data = freq_data
@@ -139,12 +172,12 @@ class EISWindow:
         self.imag_data = imag_data
         self.update_plot()
     
-    def update_fit_data(self, real_fit, imag_fit, fitted_params):
+    def update_fit_data(self, real_fit, imag_fit, fitted_params, Labels):
         self.freq_fit_data = self.freq_data
         self.real_fit_data = real_fit
         self.imag_fit_data = imag_fit
         self.params_display.delete(1.0, tk.END)
-        self.params_display.insert(tk.END, f"Fitted Parameters:\n{fitted_params}")
+        self.params_display.insert(tk.END, f"Fitted Parameters:\n{Labels}\n{fitted_params}")
         self.update_plot()
 
     def update_plot(self):

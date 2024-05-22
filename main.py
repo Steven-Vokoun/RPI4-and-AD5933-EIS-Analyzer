@@ -16,7 +16,7 @@ class MainApplication(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.current_window = None
         self.setup_main_frame()
-        self.setup_connections()        
+        self.setup_connections()
         self.setup_toolbar()
         self.setup_frames()
         self.default_to_eis_window()
@@ -29,9 +29,6 @@ class MainApplication(tk.Tk):
         self.main_frame.rowconfigure(1, weight=1)
 
         self.bind("<Escape>", self.on_close)
-
-    #def on_close(self, event = None):
-    #    self.destroy()
 
     def setup_toolbar(self):
         self.toolbar_frame = tk.Frame(self.main_frame)
@@ -49,6 +46,7 @@ class MainApplication(tk.Tk):
 
         Temperature = ttk.Label(self.toolbar_frame, text="Temperature: " + str(self.temperature) + " C")
         Temperature.pack(side=tk.RIGHT, padx=10)
+        Temperature.config(borderwidth=1, relief="solid")
 
     def setup_frames(self):
         self.plot_frame = tk.Frame(self.main_frame)
@@ -64,8 +62,15 @@ class MainApplication(tk.Tk):
 
     def setup_connections(self):
         self.sensor = AD5933()
-        self.temperature = self.sensor.measure_temperature()
-        self.sensor.send_cmd('STANDBY')
+        self.find_temperature()
+
+    def find_temperature(self):
+        self.temperature = 25
+        if os.name == 'nt':
+            pass
+        else:
+            self.temperature = self.sensor.measure_temperature()
+            self.sensor.send_cmd('STANDBY')
 
     def default_to_eis_window(self):
         self.dropdown.set("EIS")
@@ -75,7 +80,6 @@ class MainApplication(tk.Tk):
         selection = self.dropdown.get()
         if self.current_window:
             self.current_window.destroy()
-
         if selection == "EIS":
             self.current_window = EISWindow(self.plot_frame, self.controls_frame, self.button_frame, self.sensor)
         elif selection == "CV":
