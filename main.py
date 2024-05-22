@@ -12,7 +12,7 @@ class MainApplication(tk.Tk):
         self.title("Experiment GUI")
         #self.overrideredirect(True)
         self.geometry("800x480")
-        #self.attributes('-fullscreen', True)
+        self.attributes('-fullscreen', True)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.current_window = None
         self.setup_main_frame()

@@ -96,7 +96,7 @@ def export_to_usb(send_notification, frequencies, real, imaginary):
             writer = csv.writer(file)
             writer.writerow(['Frequency', 'Real', 'Imaginary'])
             for f, r, i in zip(frequencies, real, imaginary):
-                writer.writerow([f, r, i])
+                writer.writerow([f, str(r), str(i)])
         send_notification(f"Data successfully exported to {file_path}")
     except Exception as e:
         send_notification(f"Failed to write to CSV: {e}")
