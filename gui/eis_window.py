@@ -212,9 +212,9 @@ class EISWindow:
 
     def plot_real_vs_imag(self):
         self.ax.clear()
-        self.ax.scatter(self.real_data, -self.imag_data, s=5)
+        self.ax.scatter(self.real_data, self.imag_data, s=5)
         if self.real_fit_data is not None:
-            self.ax.plot(self.real_fit_data, -self.imag_fit_data, color='red')
+            self.ax.plot(self.real_fit_data, self.imag_fit_data, color='red')
         self.ax.set_xlabel("Real")
         self.ax.set_ylabel("Imaginary")
         self.ax.set_title("Real vs Imaginary")

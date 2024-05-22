@@ -28,8 +28,6 @@ class MainApplication(tk.Tk):
         self.main_frame.columnconfigure(1, weight=1)
         self.main_frame.rowconfigure(1, weight=1)
 
-        self.bind("<Escape>", self.on_close)
-
     def setup_toolbar(self):
         self.toolbar_frame = tk.Frame(self.main_frame)
         self.toolbar_frame.grid(row=0, column=0, columnspan=2, sticky="ew")

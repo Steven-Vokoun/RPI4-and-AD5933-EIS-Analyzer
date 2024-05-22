@@ -44,17 +44,17 @@ def fit_eis_data(frequencies, real_impedances, imag_impedances, circuit):
 
     # Define circuit models
     if circuit == 'Series RC':
-        circuit_model = 'R0-C1'
-        initial_guess = [1000, 5E-8]
+        circuit_model = 'R0-C0'
+        initial_guess = [100000, 5E-10]
     elif circuit == 'Parallel RC':
-        circuit_model = 'R0-p(C1,R1)'
-        initial_guess = [1000, 5E-8, 100000]
+        circuit_model = 'p(R0, C0)'
+        initial_guess = [100000, 5E-10]
     elif circuit == 'Randles':
         circuit_model = 'R0-p(C1,R1)'
-        initial_guess = [1000, 5E-8, 100000]
+        initial_guess = [10000, 5E-10, 100000]
     elif circuit == 'Randles With CPE':
         circuit_model = 'R0-p(CPE1,R1)'
-        initial_guess = [1000, 5E-8, 0.9, 100000]
+        initial_guess = [10000, 5E-10, 0.9, 100000]
     else:
         raise ValueError(f"Unknown circuit type: {circuit}")
     circuit = CustomCircuit(initial_guess=initial_guess, circuit=circuit_model)
