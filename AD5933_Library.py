@@ -302,7 +302,9 @@ class AD5933:
         real, imag = self.run_freq_sweep(freq)
         mag = np.sqrt((real**2) + (imag **2))
         GainFactor = 1/(Impedance_Magnitude * mag)
-        Sys_Phase = self.find_phase_arctan(real, imag) - Impedance_Phase
+        Sys_Phase = self.find_phase_arctan(real, imag)
+        print('System Phase: ', Sys_Phase, 'Impedance Phase: ', Impedance_Phase)
+        Sys_Phase = Sys_Phase - Impedance_Phase
         return GainFactor, Sys_Phase
 
     def Calibration_Sweep(self, Impedance, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
@@ -334,12 +336,14 @@ class AD5933:
         adjusted_impedances = [1/mag for mag in adjusted_magnitudes]
         return adjusted_impedances
 
-    def Adjust_Phase_Return_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, Sys_Phases):
+    def Adjust_Phase_Return_Phase(self, Freqs_Measured, real, imag, Freqs_Calibration, Sys_Phases):
         if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
             raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
         Phases_Measured = np.rad2deg(np.arctan2(imag,real))
+        print('Measured Phases: ', Phases_Measured)
         interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
         adjusted_phases = [phase - sys_phase + 180 for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
+        print('Adjusted Phases: ', adjusted_phases)
         return adjusted_phases
         
     def export_calibration_data(self, freqs, gain_factors, sys_phases):
@@ -354,7 +358,7 @@ class AD5933:
         freqs, real, imag = self.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
         Cal_Freqs, Gain_Factors, Sys_Phases = self.import_calibration_data()
         Magnitude = self.Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, Cal_Freqs, Gain_Factors)
-        Phase = self.Adjust_Phase_Return_Impedance(freqs, real, imag, Cal_Freqs, Sys_Phases)
+        Phase = self.Adjust_Phase_Return_Phase(freqs, real, imag, Cal_Freqs, Sys_Phases)
         freqs = np.array(freqs)
         Magnitude = np.array(Magnitude)
         Phase = np.array(Phase)
