@@ -169,9 +169,9 @@ class EISWindow:
 
     def plot_freq_vs_phase(self):
         self.ax.clear()
-        self.ax.scatter(self.freq_data, np.rad2deg(np.arctan(self.imag_data/self.real_data)), s=5)
+        self.ax.scatter(self.freq_data, self.phase, s=5)
         if self.freq_fit_data is not None:
-            self.ax.plot(self.freq_fit_data, self.phase, color='red')
+            self.ax.plot(self.freq_fit_data, np.rad2deg(np.arctan2(self.imag_fit_data,self.real_fit_data)), color='red')
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Phase")
         self.ax.set_title("Frequency vs Phase")

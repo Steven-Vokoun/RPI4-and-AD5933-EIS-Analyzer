@@ -342,7 +342,7 @@ class AD5933:
         Phases_Measured = np.rad2deg(np.arctan2(imag,real))
         print('Measured Phases: ', Phases_Measured)
         interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
-        adjusted_phases = [phase - sys_phase + 180 for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
+        adjusted_phases = [phase - sys_phase for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
         print('Adjusted Phases: ', adjusted_phases)
         return adjusted_phases
         
