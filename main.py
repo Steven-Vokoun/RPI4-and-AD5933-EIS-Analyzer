@@ -10,7 +10,7 @@ class MainApplication(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Experiment GUI")
-        #self.overrideredirect(True)
+        self.overrideredirect(True)
         self.geometry("800x480")
         self.attributes('-fullscreen', True)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -41,6 +41,9 @@ class MainApplication(tk.Tk):
 
         readme_button = ttk.Button(self.toolbar_frame, text="Open README", command=self.open_readme)
         readme_button.pack(side=tk.LEFT, padx=10)
+
+        close_button = ttk.Button(self.toolbar_frame, text="Close", command=self.on_close)
+        close_button.pack(side=tk.RIGHT, padx=10)
 
         Temperature = ttk.Label(self.toolbar_frame, text="Temperature: " + str(self.temperature) + " C")
         Temperature.pack(side=tk.RIGHT, padx=10)
