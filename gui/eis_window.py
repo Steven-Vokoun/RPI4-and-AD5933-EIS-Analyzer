@@ -144,7 +144,7 @@ class EISWindow:
         num_steps = int(self.step_size_entry.get())
         spacing_type = self.spacing_type.get()
         self.send_notification("Calibrating EIS")
-        self.sensor.Calibration_Sweep(220_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.sensor.Calibration_Sweep(100_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.send_notification("Calibration Complete")
 
     def start_experiment(self):
