@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
 import os
@@ -104,7 +103,7 @@ class AD5933:
         self.set_clock_source(clk_source)
         self.set_pga_gain(PGA_Gain)
         self.set_increment_number(0)
-        self.set_settling_time_cycles(100)
+        self.set_settling_time_cycles(2000)
 
     def write_register(self, reg, value):
         self.bus.write_byte_data(DEV_ADDR, reg, value)
@@ -236,7 +235,6 @@ class AD5933:
             raise ValueError('Invalid Status Poll Type')
     
     def twos_complement_to_int(self, value, bits):
-        """Convert a 2's complement number to an integer."""
         if value & (1 << (bits - 1)):
             value -= 1 << bits
         return value
@@ -318,6 +316,7 @@ class AD5933:
         Impedance_Magnitude = self.Calculate_Impedance_Mag_At_Frequency(Impedance, freq)
         Impedance_Phase = self.Calculate_Impedance_Phase_At_Frequency(Impedance, freq)
         real, imag = self.run_freq_sweep(freq)
+        print(real,imag)
         mag = np.sqrt((real**2) + (imag **2))
         GainFactor = 1/(Impedance_Magnitude * mag)
         Sys_Phase = self.find_phase_arctan(real, imag)

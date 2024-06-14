@@ -1,5 +1,14 @@
-import re
 
+channel = 5
+binary_value = format(channel, f'0{8}b')
+print(binary_value)
+
+
+
+
+
+'''
+import re
 def extract_information(input_string):
     # Extract the relevant information using regular expressions
     pattern = r'(?:R|C|CPE|Wo)\d+|(?<=,)(?:R|C|CPE|Wo)\d+(?=\))'
@@ -15,6 +24,10 @@ def extract_information(input_string):
 print(extract_information('R0-C1'))  # Output: ['R0', 'C1']
 print(extract_information('R0-p(C1,R1)'))  # Output: ['R0', 'C1', 'R1']
 print(extract_information('R0-p(CPE1,R1)'))  # Output: ['R0', 'CPE1', 'R1']
+'''
+
+
+
 
 
 
