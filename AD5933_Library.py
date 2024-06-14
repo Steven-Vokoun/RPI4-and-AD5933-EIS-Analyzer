@@ -55,8 +55,6 @@ REAL_DATA_REG0 = 		0x95 #D7 to D0
 IMG_DATA_REG1 = 		0x96 #D15 to D8
 IMG_DATA_REG0 = 		0x97 #D7 to D0
 
-MAX_FREQ = 				100_000
-MIN_FREQ = 				1_000
 
 
 # High Control Register (D8-D15)
@@ -105,6 +103,7 @@ class AD5933:
         self.set_increment_number(0)
         self.set_settling_time_cycles(2000)
 
+    # I2C Functions
     def write_register(self, reg, value):
         self.bus.write_byte_data(DEV_ADDR, reg, value)
     def read_register(self, reg):
@@ -114,6 +113,7 @@ class AD5933:
         for i in range(length):
             self.bus.write_byte_data(DEV_ADDR, reg + i, data[i])
 
+    # AD5933 Functions
     def send_cmd(self, cmd):
         control_reg = self.read_register(CONTROL_REG1)
         control_reg &= 0x0F
@@ -234,6 +234,9 @@ class AD5933:
         else:
             raise ValueError('Invalid Status Poll Type')
     
+
+
+    # Functions for impedance measurement
     def twos_complement_to_int(self, value, bits):
         if value & (1 << (bits - 1)):
             value -= 1 << bits
@@ -277,7 +280,6 @@ class AD5933:
 
         return freqs, real_data, imag_data
     
-
     def Calculate_Impedance_Mag_At_Frequency(self, Impedance, freq):
         s = sp.symbols('s')
         if isinstance(Impedance, int) or isinstance(Impedance, float):
@@ -312,6 +314,10 @@ class AD5933:
         else:
             ValueError('Invalid Input')
 
+
+
+
+    # Calibration Functions
     def Calibrate_Single_Point(self, Impedance, freq):
         Impedance_Magnitude = self.Calculate_Impedance_Mag_At_Frequency(Impedance, freq)
         Impedance_Phase = self.Calculate_Impedance_Phase_At_Frequency(Impedance, freq)
@@ -366,7 +372,10 @@ class AD5933:
     def import_calibration_data(self):
         data = np.loadtxt('calibration_data.csv', delimiter=',')
         return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
-    
+
+
+
+    # Adjustment Functions
     def Sweep_And_Adjust(self, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
         freqs, real, imag = self.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
         Cal_Freqs, Gain_Factors, Sys_Phases = self.import_calibration_data()
