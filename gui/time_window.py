@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from time_experiment import run_time_experiment
 
 class TimeWindow:
-    def __init__(self, plot_frame, controls_frame, button_frame):
+    def __init__(self, plot_frame, controls_frame, button_frame, toolbar_frame):
         self.plot_frame = plot_frame
         self.controls_frame = controls_frame
         self.setup_ui()

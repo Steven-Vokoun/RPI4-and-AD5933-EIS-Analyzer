@@ -171,6 +171,23 @@ class AD5933:
         control_reg |= gain
         self.write_register(CONTROL_REG1, control_reg)
 
+    def set_output_voltage(self, voltage):
+        if voltage == 2:
+            voltage = V_OUT_1
+        elif voltage == 1:
+            voltage = V_OUT_2
+        elif voltage == .4:
+            voltage = V_OUT_3
+        elif voltage == .2:
+            voltage = V_OUT_4
+        else:
+            raise ValueError('Invalid Voltage Value')
+
+        control_reg = self.read_register(CONTROL_REG1)
+        control_reg &= ~V_OUT_2
+        control_reg |= voltage
+        self.write_register(CONTROL_REG1, control_reg)
+
     def measure_temperature(self):
         self.send_cmd(MEASURE_TEMP)
 
@@ -344,8 +361,6 @@ class AD5933:
             gf, sys_phase = self.Calibrate_Single_Point(Impedance, freq)
             GainFactors.append(gf)
             Sys_Phases.append(sys_phase)
-        
-        self.export_calibration_data(freqs, GainFactors, Sys_Phases)
         return freqs, GainFactors, Sys_Phases
 
     def Adjust_Magnitude_Return_abs_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, GainFactors):
@@ -364,16 +379,7 @@ class AD5933:
         interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
         adjusted_phases = [phase - sys_phase for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
         return adjusted_phases
-        
-    def export_calibration_data(self, freqs, gain_factors, sys_phases):
-        data = np.array([freqs, gain_factors, sys_phases])
-        np.savetxt('calibration_data.csv', data, delimiter=',')  
-
-    def import_calibration_data(self):
-        data = np.loadtxt('calibration_data.csv', delimiter=',')
-        return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
-
-
+    
 
     # Adjustment Functions
     def Sweep_And_Adjust(self, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
@@ -387,3 +393,13 @@ class AD5933:
         real = Magnitude * np.cos(np.deg2rad(Phase))
         imag = Magnitude * np.sin(np.deg2rad(Phase))
         return freqs, real, imag, Phase
+    
+    '''
+    def export_calibration_data(self, freqs, gain_factors, sys_phases):
+        data = np.array([freqs, gain_factors, sys_phases])
+        np.savetxt('calibration_data.csv', data, delimiter=',')
+
+    def import_calibration_data(self):
+        data = np.loadtxt('calibration_data.csv', delimiter=',')
+        return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
+'''

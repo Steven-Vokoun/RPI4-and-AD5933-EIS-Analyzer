@@ -76,7 +76,6 @@ def detect_usb_drive():
             return partition.mountpoint
     return None
 
-
 def export_to_usb(send_notification, frequencies, real, imaginary):
     """Export frequencies, real, and imaginary data to a CSV file on a USB drive."""
     usb_mount_point = None
@@ -100,3 +99,60 @@ def export_to_usb(send_notification, frequencies, real, imaginary):
         send_notification(f"Data successfully exported to {file_path}")
     except Exception as e:
         send_notification(f"Failed to write to CSV: {e}")
+
+def set_output_amplitude(voltage, sensor, Output_Gain_Mux):
+    if voltage == "2mV":
+        sensor.set_voltage_output(.2)
+        Output_Gain_Mux.select_channel(2)
+    elif voltage == "4mV":
+        sensor.set_voltage_output(.4)
+        Output_Gain_Mux.select_channel(2)
+    elif voltage == "10mV":
+        sensor.set_voltage_output(1)
+        Output_Gain_Mux.select_channel(2)
+    elif voltage == "20mV":
+        sensor.set_voltage_output(.2)
+        Output_Gain_Mux.select_channel(1)
+    elif voltage == "38mV":
+        sensor.set_voltage_output(.4)
+        Output_Gain_Mux.select_channel(1)
+    elif voltage == "100mV":
+        sensor.set_voltage_output(1)
+        Output_Gain_Mux.select_channel(1)
+    elif voltage == "200mV":
+        sensor.set_voltage_output(.2)
+        Output_Gain_Mux.select_channel(0)
+    elif voltage == "380mV":
+        sensor.set_voltage_output(.4)
+        Output_Gain_Mux.select_channel(0)
+    elif voltage == "1V":
+        sensor.set_voltage_output(1)
+        Output_Gain_Mux.select_channel(0)
+    elif voltage == "2V":
+        sensor.set_voltage_output(2)
+        Output_Gain_Mux.select_channel(0)
+    else:
+        print("Invalid voltage value")
+
+
+def calibrate_all(voltage, Impedance, start_freq, end_freq, hardware, send_notification):
+    send_notification("Calibrating...")
+    set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
+    freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep()
+    export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, Impedance)
+    send_notification("Calibration complete")
+
+def conduct_experiment(hardware, send_notification, voltage, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
+    send_notification("Running EIS experiment...")
+    set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
+    freqs, real, imag = hardware.sensor.EIS_Sweep(start_freq, end_freq, num_steps, spacing_type)
+    return freqs, real, imag
+
+def export_calibration_data(self, freqs, gain_factors, sys_phases, voltage, Impedance):
+    data = np.array([freqs, gain_factors, sys_phases])
+    folder_name = 'calibration_data'
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+    file_name = f'{voltage}_{Impedance}.csv'
+    file_path = os.path.join(folder_name, file_name)
+    np.savetxt(file_path, data, delimiter=',')
