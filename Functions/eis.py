@@ -101,34 +101,34 @@ def export_to_usb(send_notification, frequencies, real, imaginary):
         send_notification(f"Failed to write to CSV: {e}")
 
 def set_output_amplitude(voltage, sensor, Output_Gain_Mux):
-    if voltage == "2mV" or voltage == .002:
+    if voltage == "2mV":
         sensor.set_voltage_output(.2)
         Output_Gain_Mux.select_channel(2)
-    elif voltage == "4mV" or voltage == .004:
+    elif voltage == "4mV":
         sensor.set_voltage_output(.4)
         Output_Gain_Mux.select_channel(2)
-    elif voltage == "10mV" or voltage == .01:
+    elif voltage == "10mV":
         sensor.set_voltage_output(1)
         Output_Gain_Mux.select_channel(2)
-    elif voltage == "20mV" or voltage == .02:
+    elif voltage == "20mV":
         sensor.set_voltage_output(.2)
         Output_Gain_Mux.select_channel(1)
-    elif voltage == "38mV" or voltage == .038:
+    elif voltage == "38mV":
         sensor.set_voltage_output(.4)
         Output_Gain_Mux.select_channel(1)
-    elif voltage == "100mV" or voltage == .1:
+    elif voltage == "100mV":
         sensor.set_voltage_output(1)
         Output_Gain_Mux.select_channel(1)
-    elif voltage == "200mV" or voltage == .2:
+    elif voltage == "200mV":
         sensor.set_voltage_output(.2)
         Output_Gain_Mux.select_channel(0)
-    elif voltage == "380mV" or voltage == .38:
+    elif voltage == "380mV":
         sensor.set_voltage_output(.4)
         Output_Gain_Mux.select_channel(0)
-    elif voltage == "1V" or voltage == 1:
+    elif voltage == "1V":
         sensor.set_voltage_output(1)
         Output_Gain_Mux.select_channel(0)
-    elif voltage == "2V" or voltage == 2:
+    elif voltage == "2V":
         sensor.set_voltage_output(2)
         Output_Gain_Mux.select_channel(0)
     else:

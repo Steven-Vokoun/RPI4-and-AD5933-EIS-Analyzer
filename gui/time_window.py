@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-from time_experiment import run_time_experiment
+from Functions.time_experiment import run_time_experiment
 
 class TimeWindow:
     def __init__(self, plot_frame, controls_frame, button_frame, toolbar_frame):

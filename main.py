@@ -11,6 +11,7 @@ class MainApplication(ctk.CTk):
         self.geometry("800x480")
         self._set_appearance_mode("dark")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+
         self.current_window = None
         self.previous_selection = "EIS"
         self.setup_main_frame()
@@ -19,12 +20,13 @@ class MainApplication(ctk.CTk):
         self.on_selection_change("EIS")
 
     def setup_main_frame(self):
+        self.title("Experiment GUI")
+        self.geometry("800x480")
+        self._set_appearance_mode("dark")
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        
         self.main_frame = ctk.CTkFrame(self)
-        self.main_frame.pack()
-        self.main_frame.grid_columnconfigure(0, weight=1)
-        self.main_frame.grid_columnconfigure(1, weight=1)
-        self.main_frame.grid_rowconfigure(1, weight=1)
-
+        self.main_frame.pack(fill = ctk.BOTH, expand = True)
         self.readme_text_area = None
 
     def setup_toolbar(self):
@@ -45,13 +47,16 @@ class MainApplication(ctk.CTk):
 
     def setup_frames(self):
         self.plot_frame = ctk.CTkFrame(self.main_frame)
-        self.plot_frame.grid(row=1, column=0, sticky="ns")
+        self.plot_frame.grid(row=1, column=0, sticky="nsew")
 
         self.controls_frame = ctk.CTkFrame(self.main_frame)
-        self.controls_frame.grid(row=1, column=1, sticky="ns")
+        self.controls_frame.grid(row=1, column=1, sticky="nsew")
 
         self.button_frame = ctk.CTkFrame(self.main_frame)
         self.button_frame.grid(row=2, column=0, columnspan=2, sticky="ew")
+
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(1, weight=1)
 
     def on_selection_change(self, selection):
         self.previous_selection = selection

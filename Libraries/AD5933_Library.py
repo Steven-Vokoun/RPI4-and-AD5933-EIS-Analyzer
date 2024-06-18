@@ -331,6 +331,9 @@ class AD5933:
         else:
             ValueError('Invalid Input')
 
+
+
+
     # Calibration Functions
     def Calibrate_Single_Point(self, Impedance, freq):
         Impedance_Magnitude = self.Calculate_Impedance_Mag_At_Frequency(Impedance, freq)

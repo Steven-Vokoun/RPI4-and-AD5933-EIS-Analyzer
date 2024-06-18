@@ -5,9 +5,9 @@ import numpy as np
 import matplotlib
 import os
 
-from eis import fit_eis_data, export_to_usb, run_demo_EIS_experiment, calibrate_all, set_output_amplitude
-from MUX_and_CLK_Library import MUX, LTC6904
-from AD5933_Library import AD5933
+from Functions.eis import fit_eis_data, export_to_usb, run_demo_EIS_experiment, calibrate_all, set_output_amplitude
+from Libraries.MUX_and_CLK_Library import MUX, LTC6904
+from Libraries.AD5933_Library import AD5933
 
 
 class EISWindow:
@@ -69,7 +69,7 @@ class EISWindow:
 
     def setup_plot(self):
         matplotlib.rcParams['font.size'] = 10
-        self.figure, self.ax = plt.subplots(figsize=(4, 4))
+        self.figure, self.ax = plt.subplots(figsize=(5, 5))
         self.figure.subplots_adjust(left=0.2)
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         self.canvas.get_tk_widget().pack(fill=ctk.BOTH, expand=True)
@@ -88,21 +88,10 @@ class EISWindow:
 
     def setup_freq_and_spacing(self):
         self.freq_frame = ctk.CTkFrame(self.controls_frame)
-        self.freq_frame.pack(pady=5, padx=5, anchor="n", fill=ctk.X)
-
-        # Impedance
-        self.impedance_frame = ctk.CTkFrame(self.freq_frame, width=400)
-        self.impedance_frame.pack(fill=ctk.X)
-        self.Impedance_label = ctk.CTkLabel(self.impedance_frame, text="Impedance:")
-        self.Impedance_label.pack(side=ctk.LEFT, padx=5)
-        self.Impedance_slider = ctk.CTkSlider(self.impedance_frame, from_=10000, to=1000000, command=self.update_impedance_label)
-        self.Impedance_slider.set(100000)
-        self.Impedance_slider.pack(side=ctk.LEFT, padx=5, fill=ctk.X, expand=True)
-        self.Impedance_value_label = ctk.CTkLabel(self.impedance_frame, text=f"{self.Impedance_slider.get()}", width=50)
-        self.Impedance_value_label.pack(side=ctk.LEFT, padx=2)
+        self.freq_frame.pack(pady=3, padx=5, anchor="n", fill=ctk.X)
 
         # Min Frequency
-        self.min_freq_frame = ctk.CTkFrame(self.freq_frame, width=400)
+        self.min_freq_frame = ctk.CTkFrame(self.freq_frame, width=300)
         self.min_freq_frame.pack(fill=ctk.X)
         self.min_freq_label = ctk.CTkLabel(self.min_freq_frame, text="Min Frequency:")
         self.min_freq_label.pack(side=ctk.LEFT, padx=5)
@@ -113,7 +102,7 @@ class EISWindow:
         self.min_freq_value_label.pack(side=ctk.LEFT, padx=2)
 
         # Max Frequency
-        self.max_freq_frame = ctk.CTkFrame(self.freq_frame, width=400)
+        self.max_freq_frame = ctk.CTkFrame(self.freq_frame, width=300)
         self.max_freq_frame.pack(fill=ctk.X)
         self.max_freq_label = ctk.CTkLabel(self.max_freq_frame, text="Max Frequency:")
         self.max_freq_label.pack(side=ctk.LEFT, padx=5)
@@ -124,7 +113,7 @@ class EISWindow:
         self.max_freq_value_label.pack(side=ctk.LEFT, padx=2)
 
         # Step Size
-        self.step_size_frame = ctk.CTkFrame(self.freq_frame, width=400)
+        self.step_size_frame = ctk.CTkFrame(self.freq_frame, width=300)
         self.step_size_frame.pack(fill=ctk.X)
         self.step_size_label = ctk.CTkLabel(self.step_size_frame, text="Number Of Steps:")
         self.step_size_label.pack(side=ctk.LEFT, padx=5)
@@ -142,6 +131,21 @@ class EISWindow:
 
         self.linear_radio = ctk.CTkRadioButton(self.spacing_type_frame, text="Linear Spacing", variable=self.spacing_type, value="linear")
         self.linear_radio.pack(side=ctk.LEFT, padx=10)
+
+    def update_min_freq_label(self, value):
+        step_value = round(float(value) / 100) * 100
+        self.min_freq_value_label.configure(text=f"{step_value}")
+        self.min_freq_slider.set(step_value)
+
+    def update_max_freq_label(self, value):
+        step_value = round(float(value) / 1000) * 1000
+        self.max_freq_value_label.configure(text=f"{step_value}")
+        self.max_freq_slider.set(step_value)
+
+    def update_step_size_label(self, value):
+        step_value = round(float(value) / 10) * 10
+        self.step_size_value_label.configure(text=f"{step_value}")
+        self.step_size_slider.set(step_value)
 
 
     def setup_step_size_and_start(self):
@@ -161,21 +165,27 @@ class EISWindow:
         self.circuit_type_dropdown = ctk.CTkComboBox(self.circuit_type_frame, variable=self.circuit_type, values=["Series RC", "Parallel RC", "Randles", "Randles With CPE"])
         self.circuit_type_dropdown.pack(side=ctk.LEFT, pady=5, padx=10)
 
-        self.params_display = ctk.CTkTextbox(self.circuit_type_frame, height=60, width=275)
-        self.params_display.pack(side=ctk.LEFT, pady=5, padx=10)
+        self.params_display = ctk.CTkTextbox(self.circuit_type_frame, height=80, width=275)
+        self.params_display.pack(side=ctk.LEFT, pady=2, padx=10)
 
 
     def setup_plot_and_params(self):
-        self.plot_type = ctk.StringVar(value="freq_vs_mag")
+        self.plot_type = ctk.StringVar(value="mag_vs_freq")
 
-        self.freq_mag_button = ctk.CTkRadioButton(self.button_frame, text="Frequency vs Magnitude", variable=self.plot_type, value="freq_vs_mag", command=self.update_plot)
-        self.freq_mag_button.pack(side=ctk.LEFT, padx=10)
+        self.freq_mag_button = ctk.CTkRadioButton(self.button_frame, text="Magnitude vs Frequency", variable=self.plot_type, value="mag_vs_freq", command=self.update_plot)
+        self.freq_mag_button.pack(side=ctk.LEFT, padx=5)
 
-        self.freq_phase_button = ctk.CTkRadioButton(self.button_frame, text="Frequency vs Phase", variable=self.plot_type, value="freq_vs_phase", command=self.update_plot)
-        self.freq_phase_button.pack(side=ctk.LEFT, padx=10)
+        self.freq_phase_button = ctk.CTkRadioButton(self.button_frame, text="Phase vs Frequency", variable=self.plot_type, value="phase_vs_freq", command=self.update_plot)
+        self.freq_phase_button.pack(side=ctk.LEFT, padx=5)
 
-        self.real_imag_button = ctk.CTkRadioButton(self.button_frame, text="Real Vs Imaginary", variable=self.plot_type, value="real_vs_imag", command=self.update_plot)
-        self.real_imag_button.pack(side=ctk.LEFT, padx=10)
+        self.real_imag_button = ctk.CTkRadioButton(self.button_frame, text="Imaginary vs Real", variable=self.plot_type, value="imag_vs_real", command=self.update_plot)
+        self.real_imag_button.pack(side=ctk.LEFT, padx=5)
+
+        self.real_freq_button = ctk.CTkRadioButton(self.button_frame, text="Real vs Frequency", variable=self.plot_type, value="real_vs_freq", command=self.update_plot)
+        self.real_freq_button.pack(side=ctk.LEFT, padx=5)
+
+        self.imag_freq_button = ctk.CTkRadioButton(self.button_frame, text="Imaginary vs Frequency", variable=self.plot_type, value="imag_vs_freq", command=self.update_plot)
+        self.imag_freq_button.pack(side=ctk.LEFT, padx=5)
 
         self.setup_plot()
 
@@ -186,21 +196,9 @@ class EISWindow:
         self.export_button = ctk.CTkButton(self.export_frame, text="Export Data", command=self.export_data)
         self.export_button.pack(side=ctk.LEFT, pady=5, padx=10)
 
-        self.notification_box = ctk.CTkTextbox(self.export_frame, height=60, width=275)
+        self.notification_box = ctk.CTkTextbox(self.export_frame, height=80, width=275)
         self.notification_box.pack(side=ctk.LEFT, padx=2)
         self.notification_box.insert(ctk.END, "Welcome! Please calibrate your device.")
-
-    def update_impedance_label(self, value):
-        self.Impedance_value_label.configure(text=f"{int(value)}")
-
-    def update_min_freq_label(self, value):
-        self.min_freq_value_label.configure(text=f"{int(value)}")
-
-    def update_max_freq_label(self, value):
-        self.max_freq_value_label.configure(text=f"{int(value)}")
-
-    def update_step_size_label(self, value):
-        self.step_size_value_label.configure(text=f"{int(value)}")
 
     def send_notification(self, message):
         message = "\n" + message
@@ -217,7 +215,7 @@ class EISWindow:
 
     # Experiments
     def calibrate_experiment(self):
-        calibrate_all(self.voltage.get(), self.Impedance_slider.get(), int(self.min_freq_slider.get()), int(self.max_freq_slider.get()), self.hardware_components, self.send_notification)
+        calibrate_all(self.voltage.get(), int(self.min_freq_slider.get()), int(self.max_freq_slider.get()), self.hardware_components, self.send_notification)
 
     def start_experiment(self):
         if os.name == 'nt':
@@ -256,12 +254,16 @@ class EISWindow:
 
     def update_plot(self):
         plot_type = self.plot_type.get()
-        if plot_type == "freq_vs_mag":
+        if plot_type == "mag_vs_freq":
             self.plot_freq_vs_mag()
-        elif plot_type == "freq_vs_phase":
+        elif plot_type == "phase_vs_freq":
             self.plot_freq_vs_phase()
-        elif plot_type == "real_vs_imag":
+        elif plot_type == "imag_vs_real":
             self.plot_real_vs_imag()
+        elif plot_type == "real_vs_freq":
+            self.plot_freq_vs_real()
+        elif plot_type == "imag_vs_freq":
+            self.plot_freq_vs_imag()
 
     def plot_freq_vs_mag(self):
         self.ax.clear()
@@ -270,17 +272,17 @@ class EISWindow:
             self.ax.plot(self.freq_fit_data, np.sqrt(self.real_fit_data**2 + self.imag_fit_data**2), color='red')
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Magnitude")
-        self.ax.set_title("Frequency vs Magnitude")
+        self.ax.set_title("Magnitude vs Frequency")
         self.canvas.draw()
 
     def plot_freq_vs_phase(self):
         self.ax.clear()
         self.ax.scatter(self.freq_data, self.phase, s=5)
         if self.freq_fit_data is not None:
-            self.ax.plot(self.freq_fit_data, np.rad2deg(np.arctan2(self.imag_fit_data,self.real_fit_data)), color='red')
+            self.ax.plot(self.freq_fit_data, np.rad2deg(np.arctan2(self.imag_fit_data, self.real_fit_data)), color='red')
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Phase")
-        self.ax.set_title("Frequency vs Phase")
+        self.ax.set_title("Phase vs Frequency")
         self.canvas.draw()
 
     def plot_real_vs_imag(self):
@@ -290,7 +292,27 @@ class EISWindow:
             self.ax.plot(self.real_fit_data, self.imag_fit_data, color='red')
         self.ax.set_xlabel("Real")
         self.ax.set_ylabel("Imaginary")
-        self.ax.set_title("Real vs Imaginary")
+        self.ax.set_title("Imaginary vs Real")
+        self.canvas.draw()
+
+    def plot_freq_vs_real(self):
+        self.ax.clear()
+        self.ax.scatter(self.freq_data, self.real_data, s=5)
+        if self.freq_fit_data is not None:
+            self.ax.plot(self.freq_fit_data, self.real_fit_data, color='red')
+        self.ax.set_xlabel("Frequency")
+        self.ax.set_ylabel("Real")
+        self.ax.set_title("Real vs Frequency")
+        self.canvas.draw()
+
+    def plot_freq_vs_imag(self):
+        self.ax.clear()
+        self.ax.scatter(self.freq_data, self.imag_data, s=5)
+        if self.freq_fit_data is not None:
+            self.ax.plot(self.freq_fit_data, self.imag_fit_data, color='red')
+        self.ax.set_xlabel("Frequency")
+        self.ax.set_ylabel("Imaginary")
+        self.ax.set_title("Imaginary vs Frequency")
         self.canvas.draw()
 
     def clear_frame(self, frame):

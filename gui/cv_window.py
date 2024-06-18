@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-from cv import run_cv_experiment
+from Functions.cv import run_cv_experiment
 
 class CVWindow:
     def __init__(self, plot_frame, controls_frame, button_frame, toolbar_frame):
