@@ -69,7 +69,7 @@ class EISWindow:
 
     def setup_plot(self):
         matplotlib.rcParams['font.size'] = 10
-        self.figure, self.ax = plt.subplots(figsize=(5, 5))
+        self.figure, self.ax = plt.subplots(figsize=(4, 4))
         self.figure.subplots_adjust(left=0.2)
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         self.canvas.get_tk_widget().pack(fill=ctk.BOTH, expand=True)
@@ -241,7 +241,7 @@ class EISWindow:
         self.freq_data = freq_data
         self.real_data = real_data
         self.imag_data = imag_data
-        self.phase = np.arctan2(imag_data, real_data)
+        self.phase = np.rad2deg(np.arctan2(imag_data, real_data))
         self.update_plot()
 
     def update_fit_data(self, real_fit, imag_fit, fitted_params, Labels):

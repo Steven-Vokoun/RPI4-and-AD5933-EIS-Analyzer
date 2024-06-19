@@ -98,6 +98,7 @@ class AD5933:
     def __init__(self, clk =  16.776e6, clk_source='internal', PGA_Gain = 1):
         self.bus = SMBus(1)
         self.clk = clk
+        self.reset()
         self.set_clock_source(clk_source)
         self.set_pga_gain(PGA_Gain)
         self.set_increment_number(0)
