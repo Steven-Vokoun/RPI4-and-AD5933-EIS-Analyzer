@@ -101,45 +101,54 @@ def export_to_usb(send_notification, frequencies, real, imaginary):
         send_notification(f"Failed to write to CSV: {e}")
 
 def set_output_amplitude(voltage, sensor, Output_Gain_Mux):
-    if voltage == "2mV" or voltage == .002:
+    if voltage == 2 or voltage == .002:
         sensor.set_voltage_output(.2)
         Output_Gain_Mux.select_channel(2)
-    elif voltage == "4mV" or voltage == .004:
+    elif voltage == 4 or voltage == .004:
         sensor.set_voltage_output(.4)
         Output_Gain_Mux.select_channel(2)
-    elif voltage == "10mV" or voltage == .01:
+    elif voltage == 10 or voltage == .01:
         sensor.set_voltage_output(1)
         Output_Gain_Mux.select_channel(2)
-    elif voltage == "20mV" or voltage == .02:
+    elif voltage == 20 or voltage == .02:
         sensor.set_voltage_output(.2)
         Output_Gain_Mux.select_channel(1)
-    elif voltage == "38mV" or voltage == .038:
+    elif voltage == 38 or voltage == .038:
         sensor.set_voltage_output(.4)
         Output_Gain_Mux.select_channel(1)
-    elif voltage == "100mV" or voltage == .1:
+    elif voltage == 100 or voltage == .1:
         sensor.set_voltage_output(1)
         Output_Gain_Mux.select_channel(1)
-    elif voltage == "200mV" or voltage == .2:
+    elif voltage == 200 or voltage == .2:
         sensor.set_voltage_output(.2)
         Output_Gain_Mux.select_channel(0)
-    elif voltage == "380mV" or voltage == .38:
+    elif voltage == 380 or voltage == .38:
         sensor.set_voltage_output(.4)
         Output_Gain_Mux.select_channel(0)
-    elif voltage == "1V" or voltage == 1:
+    elif voltage == 1 or voltage == 1:
         sensor.set_voltage_output(1)
         Output_Gain_Mux.select_channel(0)
-    elif voltage == "2V" or voltage == 2:
+    elif voltage == 2 or voltage == 2:
         sensor.set_voltage_output(2)
         Output_Gain_Mux.select_channel(0)
     else:
         print("Invalid voltage value")
 
+def calculate_impedance_range(voltage, input_gain): #voltage(mV) as a float and input_gain as a float
+    max_input_voltage = 3
+    min_input_voltage = 0.2
+    min_Impedance = ((voltage / 1000) * input_gain) / max_input_voltage
+    max_Impedance = ((voltage / 1000) * input_gain) / min_input_voltage
+    return min_Impedance, max_Impedance
 
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification):
     send_notification("Calibrating...")
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
+
+
+
     freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep()
-    export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, Impedance)
+    export_calibration_data(freqs, GainFactors, Sys_Phases, voltage)
     send_notification("Calibration complete")
 
 def conduct_experiment(hardware, send_notification, voltage, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
@@ -156,3 +165,40 @@ def export_calibration_data(self, freqs, gain_factors, sys_phases, voltage, Impe
     file_name = f'{voltage}_{Impedance}.csv'
     file_path = os.path.join(folder_name, file_name)
     np.savetxt(file_path, data, delimiter=',')
+
+resistors = [100, 4_700, 200_000, 10_000_000]
+calibrations = [100,10_000, 100_000, 1_000_000, 10_000_000]
+
+# 10mV
+print("\n10mV")
+print(calculate_impedance_range(10,resistors[0]*5))
+print(calculate_impedance_range(10,resistors[0]*5*5))
+print(calculate_impedance_range(10,resistors[1]*5))
+print(calculate_impedance_range(10,resistors[1]*5*5))
+print(calculate_impedance_range(10,resistors[2]*5))
+print(calculate_impedance_range(10,resistors[2]*5*5))
+print(calculate_impedance_range(10,resistors[3]*5))
+print(calculate_impedance_range(10,resistors[3]*5*5))
+
+
+#100mV
+print("\n100mV")
+print(calculate_impedance_range(100,resistors[0]*5))
+print(calculate_impedance_range(100,resistors[0]*5*5))
+print(calculate_impedance_range(100,resistors[1]*5))
+print(calculate_impedance_range(100,resistors[1]*5*5))
+print(calculate_impedance_range(100,resistors[2]*5))
+print(calculate_impedance_range(100,resistors[2]*5*5))
+print(calculate_impedance_range(100,resistors[3]*5))
+print(calculate_impedance_range(100,resistors[3]*5*5))
+
+#1V
+print("\n1V")
+print(calculate_impedance_range(1000,resistors[0]*5))
+print(calculate_impedance_range(1000,resistors[0]*5*5))
+print(calculate_impedance_range(1000,resistors[1]*5))
+print(calculate_impedance_range(1000,resistors[1]*5*5))
+print(calculate_impedance_range(1000,resistors[2]*5))
+print(calculate_impedance_range(1000,resistors[2]*5*5))
+print(calculate_impedance_range(1000,resistors[3]*5))
+print(calculate_impedance_range(1000,resistors[3]*5*5))

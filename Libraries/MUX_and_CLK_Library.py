@@ -42,9 +42,9 @@ class LTC6904:
 class MUX:
     def __init__(self, control_pins, size):
         """
-            control_pins (list): List of GPIO pins
-            size (int): (1, 4, or 8)
-            USES BOARD NUMBERING NOT BROADCOM
+        control_pins (list): List of GPIO pins
+        size (int): (1, 4, or 8)
+        USES BROADCOM NUMBERING
         """
         if size not in [1, 4, 8]:
             raise ValueError("Size must be 1, 4, or 8")
@@ -56,7 +56,7 @@ class MUX:
         if 2 ** self.num_control_pins < self.size:
             raise ValueError("Not enough control pins for the specified size")
 
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
         for pin in self.control_pins:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
@@ -65,13 +65,12 @@ class MUX:
         if channel < 0 or channel >= self.size:
             raise ValueError(f"Channel must be between 0 and {self.size - 1}")
 
+        # Format the channel to binary with leading zeros
         binary_value = format(channel, f'0{self.num_control_pins}b')
 
         for i in range(len(self.control_pins)):
-            if binary_value[i] == '1':
-                GPIO.output(self.control_pins[i], GPIO.HIGH)
-            else:
-                GPIO.output(self.control_pins[i], GPIO.LOW)
+            GPIO.output(self.control_pins[i], GPIO.HIGH if binary_value[i] == '1' else GPIO.LOW)
 
     def cleanup(self):
         GPIO.cleanup()
+

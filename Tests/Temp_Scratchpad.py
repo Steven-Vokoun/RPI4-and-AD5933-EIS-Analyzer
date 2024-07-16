@@ -1,10 +1,16 @@
 
+
+
+
+
+
+
+
+'''
 channel = 5
 binary_value = format(channel, f'0{8}b')
 print(binary_value)
-
-
-
+'''
 
 
 '''

@@ -359,6 +359,7 @@ class AD5933:
             gf, sys_phase = self.Calibrate_Single_Point(Impedance, freq)
             GainFactors.append(gf)
             Sys_Phases.append(sys_phase)
+        self.export_calibration_data(freqs, GainFactors, Sys_Phases) #########
         return freqs, GainFactors, Sys_Phases
 
     def Adjust_Magnitude_Return_abs_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, GainFactors):
@@ -392,7 +393,6 @@ class AD5933:
         imag = Magnitude * np.sin(np.deg2rad(Phase))
         return freqs, real, imag, Phase
     
-    '''
     def export_calibration_data(self, freqs, gain_factors, sys_phases):
         data = np.array([freqs, gain_factors, sys_phases])
         np.savetxt('calibration_data.csv', data, delimiter=',')
@@ -400,4 +400,3 @@ class AD5933:
     def import_calibration_data(self):
         data = np.loadtxt('calibration_data.csv', delimiter=',')
         return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
-'''

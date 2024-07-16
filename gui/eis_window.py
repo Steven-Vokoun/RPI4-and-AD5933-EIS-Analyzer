@@ -19,7 +19,7 @@ class EISWindow:
 
         self.spacing_type = ctk.StringVar(value="logarithmic")
         self.circuit_type = ctk.StringVar(value="Series RC")
-        self.voltage = ctk.StringVar(value="100mV")
+        self.voltage = ctk.IntVar(value=100)
 
         self.freq_data = None
         self.real_data = None
@@ -40,6 +40,7 @@ class EISWindow:
         self.setup_circuit_and_fitting()
         self.setup_plot_and_params()
         self.setup_export_and_notification()
+        self.setup_hardware()
 
     def setup_hardware(self):
         if os.name == 'nt':
@@ -49,11 +50,37 @@ class EISWindow:
 
     class HardwareComponents:
         def __init__(self):
-            self.Calibration_Mux = MUX([1,1,1], 8) ########################Fix these pins
-            self.Output_Gain_Mux = MUX([1,1], 4)
-            self.Input_Gain_Mux = MUX([1,1], 4)
+            self.Calibration_Mux = MUX([9,10,22], 8)
+            self.Output_Gain_Mux = MUX([27,17], 4)
+            self.Input_Gain_Mux = MUX([24,23], 4)
+            self.Electrode_Mux = MUX([25], 1)
             self.Calibration_CLK = LTC6904()
             self.sensor = AD5933()
+
+    def Temporary_Test(self):
+        self.hardware_components.Calibration_Mux.select_channel(2) #100k
+        self.hardware_components.Output_Gain_Mux.select_channel(4) #1x no compensation
+        self.hardware_components.Input_Gain_Mux.select_channel(1)  #10k
+        self.sensor.set_output_voltage(1)
+
+        #Calibration
+        max_freq = int(self.max_freq_entry.get())
+        min_freq = int(self.min_freq_entry.get())
+        num_steps = int(self.step_size_entry.get())
+        spacing_type = self.spacing_type.get()
+        self.send_notification("Calibrating EIS")
+        self.sensor.Calibration_Sweep(100_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.send_notification("Calibration Complete")
+
+        #Run EIS
+        max_freq = int(self.max_freq_entry.get())
+        min_freq = int(self.min_freq_entry.get())
+        spacing_type = self.spacing_type.get()
+        num_steps = int(self.step_size_entry.get())
+        self.freq_data, self.real_data, self.imag_data, self.phase = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.send_notification("Experiment Complete")
+        self.update_plot()
+
 
     def show_temp(self):
         self.temperature = 25
@@ -81,10 +108,13 @@ class EISWindow:
         self.calibrate_button = ctk.CTkButton(self.calibrate_voltage_frame, text="Calibrate EIS", command=self.calibrate_experiment)
         self.calibrate_button.pack(side=ctk.LEFT, pady=5, padx=1)
 
-        self.voltage_label = ctk.CTkLabel(self.calibrate_voltage_frame, text="Voltage: ")
-        self.voltage_label.pack(side=ctk.LEFT)
-        self.voltage_dropdown = ctk.CTkComboBox(self.calibrate_voltage_frame, variable=self.voltage, values=["2mV","4mV", "10mV", "20mV", "38mV", "100mV","200mV", "380mV", "1V", "2V"])
+        self.voltage_label = ctk.CTkLabel(self.calibrate_voltage_frame, text="Voltage (mV): ")
+        voltage_values = [str(value) for value in [2, 4, 10, 20, 38, 100, 200, 380, 1000, 2000]]
+        self.voltage_dropdown = ctk.CTkComboBox(self.calibrate_voltage_frame, variable=self.voltage, values=voltage_values)
         self.voltage_dropdown.pack(side=ctk.LEFT, padx=1)
+
+        self.Temporary_Test_Button = ctk.CTkButton(self.calibrate_voltage_frame, text="Temporary Test", command=self.Temporary_Test)
+        self.Temporary_Test_Button.pack(side=ctk.LEFT, pady=5, padx=10)
 
     def setup_freq_and_spacing(self):
         self.freq_frame = ctk.CTkFrame(self.controls_frame)
@@ -167,7 +197,6 @@ class EISWindow:
 
         self.params_display = ctk.CTkTextbox(self.circuit_type_frame, height=80, width=275)
         self.params_display.pack(side=ctk.LEFT, pady=2, padx=10)
-
 
     def setup_plot_and_params(self):
         self.plot_type = ctk.StringVar(value="mag_vs_freq")
@@ -270,6 +299,7 @@ class EISWindow:
         self.ax.scatter(self.freq_data, np.sqrt(self.real_data**2 + self.imag_data**2), s=5)
         if self.freq_fit_data is not None:
             self.ax.plot(self.freq_fit_data, np.sqrt(self.real_fit_data**2 + self.imag_fit_data**2), color='red')
+        self.ax.set_xscale("log")
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Magnitude")
         self.ax.set_title("Magnitude vs Frequency")
@@ -280,6 +310,7 @@ class EISWindow:
         self.ax.scatter(self.freq_data, self.phase, s=5)
         if self.freq_fit_data is not None:
             self.ax.plot(self.freq_fit_data, np.rad2deg(np.arctan2(self.imag_fit_data, self.real_fit_data)), color='red')
+        self.ax.set_xscale("log")
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Phase")
         self.ax.set_title("Phase vs Frequency")
@@ -287,9 +318,9 @@ class EISWindow:
 
     def plot_real_vs_imag(self):
         self.ax.clear()
-        self.ax.scatter(self.real_data, self.imag_data, s=5)
+        self.ax.scatter(self.real_data, -self.imag_data, s=5)
         if self.real_fit_data is not None:
-            self.ax.plot(self.real_fit_data, self.imag_fit_data, color='red')
+            self.ax.plot(self.real_fit_data, -self.imag_fit_data, color='red')
         self.ax.set_xlabel("Real")
         self.ax.set_ylabel("Imaginary")
         self.ax.set_title("Imaginary vs Real")
@@ -297,9 +328,11 @@ class EISWindow:
 
     def plot_freq_vs_real(self):
         self.ax.clear()
-        self.ax.scatter(self.freq_data, self.real_data, s=5)
+        self.ax.scatter(self.freq_data, abs(self.real_data), s=5)
         if self.freq_fit_data is not None:
-            self.ax.plot(self.freq_fit_data, self.real_fit_data, color='red')
+            self.ax.plot(self.freq_fit_data, abs(self.real_fit_data), color='red')
+        self.ax.set_xscale("log")
+        self.ax.set_yscale("log")
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Real")
         self.ax.set_title("Real vs Frequency")
@@ -307,9 +340,11 @@ class EISWindow:
 
     def plot_freq_vs_imag(self):
         self.ax.clear()
-        self.ax.scatter(self.freq_data, self.imag_data, s=5)
+        self.ax.scatter(self.freq_data, abs(self.imag_data), s=5)
         if self.freq_fit_data is not None:
-            self.ax.plot(self.freq_fit_data, self.imag_fit_data, color='red')
+            self.ax.plot(self.freq_fit_data, abs(self.imag_fit_data), color='red')
+        self.ax.set_xscale("log")
+        self.ax.set_yscale("log")
         self.ax.set_xlabel("Frequency")
         self.ax.set_ylabel("Imaginary")
         self.ax.set_title("Imaginary vs Frequency")
