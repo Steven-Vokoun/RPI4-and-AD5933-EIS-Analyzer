@@ -98,7 +98,6 @@ class AD5933:
     def __init__(self, clk =  16.776e6, clk_source='internal', PGA_Gain = 1):
         self.bus = SMBus(1)
         self.clk = clk
-        self.reset()
         self.set_clock_source(clk_source)
         self.set_pga_gain(PGA_Gain)
         self.set_increment_number(0)
@@ -332,6 +331,9 @@ class AD5933:
         else:
             ValueError('Invalid Input')
 
+
+
+
     # Calibration Functions
     def Calibrate_Single_Point(self, Impedance, freq):
         Impedance_Magnitude = self.Calculate_Impedance_Mag_At_Frequency(Impedance, freq)
@@ -359,7 +361,6 @@ class AD5933:
             gf, sys_phase = self.Calibrate_Single_Point(Impedance, freq)
             GainFactors.append(gf)
             Sys_Phases.append(sys_phase)
-        self.export_calibration_data(freqs, GainFactors, Sys_Phases) #########
         return freqs, GainFactors, Sys_Phases
 
     def Adjust_Magnitude_Return_abs_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, GainFactors):
@@ -393,6 +394,7 @@ class AD5933:
         imag = Magnitude * np.sin(np.deg2rad(Phase))
         return freqs, real, imag, Phase
     
+    '''
     def export_calibration_data(self, freqs, gain_factors, sys_phases):
         data = np.array([freqs, gain_factors, sys_phases])
         np.savetxt('calibration_data.csv', data, delimiter=',')
@@ -400,3 +402,4 @@ class AD5933:
     def import_calibration_data(self):
         data = np.loadtxt('calibration_data.csv', delimiter=',')
         return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
+'''
