@@ -46,6 +46,7 @@ class EISWindow:
         if os.name == 'nt':
             pass
         else:
+            self.sensor = AD5933()
             self.hardware_components = self.HardwareComponents()
 
     class HardwareComponents:
@@ -55,28 +56,27 @@ class EISWindow:
             self.Input_Gain_Mux = MUX([24,23], 4)
             self.Electrode_Mux = MUX([25], 1)
             self.Calibration_CLK = LTC6904()
-            self.sensor = AD5933()
 
     def Temporary_Test(self):
         self.hardware_components.Calibration_Mux.select_channel(2) #100k
-        self.hardware_components.Output_Gain_Mux.select_channel(4) #1x no compensation
+        self.hardware_components.Output_Gain_Mux.select_channel(3) #1x no compensation
         self.hardware_components.Input_Gain_Mux.select_channel(1)  #10k
         self.sensor.set_output_voltage(1)
 
         #Calibration
-        max_freq = int(self.max_freq_entry.get())
-        min_freq = int(self.min_freq_entry.get())
-        num_steps = int(self.step_size_entry.get())
+        max_freq = int(self.max_freq_slider.get())
+        min_freq = int(self.min_freq_slider.get())
+        num_steps = int(self.step_size_slider.get())
         spacing_type = self.spacing_type.get()
         self.send_notification("Calibrating EIS")
         self.sensor.Calibration_Sweep(100_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.send_notification("Calibration Complete")
 
         #Run EIS
-        max_freq = int(self.max_freq_entry.get())
-        min_freq = int(self.min_freq_entry.get())
+        max_freq = int(self.max_freq_slider.get())
+        min_freq = int(self.min_freq_slider.get())
         spacing_type = self.spacing_type.get()
-        num_steps = int(self.step_size_entry.get())
+        num_steps = int(self.step_size_slider.get())
         self.freq_data, self.real_data, self.imag_data, self.phase = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.send_notification("Experiment Complete")
         self.update_plot()
