@@ -84,7 +84,7 @@ class EISWindow:
 
 
     def show_temp(self):
-        self.hardwaretemperature = 25
+        self.temperature = 25
         if os.name == 'nt':
             pass
         else:
