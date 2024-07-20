@@ -58,10 +58,10 @@ class EISWindow:
             self.Calibration_CLK = LTC6904()
 
     def Temporary_Test(self):
-        self.hardware.Calibration_Mux.select_calibration('100k')
+        self.hardware.Calibration_Mux.select_calibration('Counter0')
         self.hardware.Electrode_Mux.select_electrode('2 Electrode')
-        self.hardware.Output_Gain_Mux.select_gain('1x')
-        self.hardware.Input_Gain_Mux.select_gain('10kx')
+        self.hardware.Output_Gain_Mux.select_gain('1x_uncorrected')
+        self.hardware.Input_Gain_Mux.select_gain('100kx')
         self.hardware.sensor.set_output_voltage(1)
 
         #Calibration
@@ -78,7 +78,7 @@ class EISWindow:
         min_freq = int(self.min_freq_slider.get())
         spacing_type = self.spacing_type.get()
         num_steps = int(self.step_size_slider.get())
-        self.freq_data, self.real_data, self.imag_data, self.phase = self.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.freq_data, self.real_data, self.imag_data, self.phase = self.hardware.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.send_notification("Experiment Complete")
         self.update_plot()
 
