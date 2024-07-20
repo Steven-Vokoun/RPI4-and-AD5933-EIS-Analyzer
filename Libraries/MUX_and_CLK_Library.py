@@ -47,7 +47,7 @@ class Calibration_Mux:
         for pin in pins:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
-    def select_calibration(setting):
+    def select_calibration(self, setting):
         if setting == '10Meg' or setting == 0:
             GPIO.output(9, GPIO.LOW)
             GPIO.output(10, GPIO.LOW)
@@ -82,13 +82,13 @@ class Calibration_Mux:
             GPIO.output(22, GPIO.HIGH)
 
 class Output_Gain_Mux:
-    def __init__():
+    def __init__(self):
         pins = [27,17]  # 27 is A1, 17 is A0
         GPIO.setmode(GPIO.BCM)
         for pin in pins:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
-    def select_gain(setting):
+    def select_gain(self, setting):
         if setting == '1x' or setting == 0:
             GPIO.output(27, GPIO.LOW)
             GPIO.output(17, GPIO.LOW)
@@ -103,13 +103,13 @@ class Output_Gain_Mux:
             GPIO.output(17, GPIO.HIGH)
 
 class Input_Gain_Mux:
-    def __init__():
+    def __init__(self):
         pins = [24,23]  # 24 is A1, 23 is A0
         GPIO.setmode(GPIO.BCM)
         for pin in pins:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
-    def select_gain(setting):
+    def select_gain(self, setting):
         if setting == '100x' or setting == 0:
             GPIO.output(24, GPIO.LOW)
             GPIO.output(23, GPIO.LOW)
@@ -124,11 +124,11 @@ class Input_Gain_Mux:
             GPIO.output(23, GPIO.HIGH)
 
 class Electrode_Switch:
-    def __init__():
+    def __init__(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(25, GPIO.OUT)
         GPIO.output(25, GPIO.LOW)
-    def select_electrode(setting):
+    def select_electrode(self, setting):
         if setting == '2 Electrode' or setting == 0:
             GPIO.output(25, GPIO.LOW)
         elif setting == '3 Electrode' or setting == 1:
