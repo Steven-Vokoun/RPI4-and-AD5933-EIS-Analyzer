@@ -6,7 +6,7 @@ import matplotlib
 import os
 
 from Functions.eis import fit_eis_data, export_to_usb, run_demo_EIS_experiment, calibrate_all, set_output_amplitude
-from Libraries.MUX_and_CLK_Library import MUX, LTC6904
+from Libraries.MUX_and_CLK_Library import Calibration_Mux, Output_Gain_Mux, Input_Gain_Mux, Electrode_Switch, LTC6904
 from Libraries.AD5933_Library import AD5933
 
 
@@ -46,22 +46,23 @@ class EISWindow:
         if os.name == 'nt':
             pass
         else:
-            self.sensor = AD5933()
-            self.hardware_components = self.HardwareComponents()
+            self.hardware = self.HardwareComponents()
 
     class HardwareComponents:
         def __init__(self):
-            self.Calibration_Mux = MUX([9,10,22], 8)
-            self.Output_Gain_Mux = MUX([27,17], 4)
-            self.Input_Gain_Mux = MUX([24,23], 4)
-            self.Electrode_Mux = MUX([25], 1)
+            self.sensor = AD5933()
+            self.Calibration_Mux = Calibration_Mux()
+            self.Output_Gain_Mux = Output_Gain_Mux()
+            self.Input_Gain_Mux = Input_Gain_Mux()
+            self.Electrode_Mux = Electrode_Switch()
             self.Calibration_CLK = LTC6904()
 
     def Temporary_Test(self):
-        self.hardware_components.Calibration_Mux.select_channel(2) #100k
-        self.hardware_components.Output_Gain_Mux.select_channel(3) #1x no compensation
-        self.hardware_components.Input_Gain_Mux.select_channel(1)  #10k
-        self.sensor.set_output_voltage(1)
+        self.hardware.Calibration_Mux.select_calibration('100k')
+        self.hardware.Electrode_Mux.select_electrode('2 Electrode')
+        self.hardware.Output_Gain_Mux.select_gain('1x')
+        self.hardware.Input_Gain_Mux.select_gain('10kx')
+        self.hardware.sensor.set_output_voltage(1)
 
         #Calibration
         max_freq = int(self.max_freq_slider.get())
@@ -69,7 +70,7 @@ class EISWindow:
         num_steps = int(self.step_size_slider.get())
         spacing_type = self.spacing_type.get()
         self.send_notification("Calibrating EIS")
-        self.sensor.Calibration_Sweep(100_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.hardware.sensor.Calibration_Sweep(100_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.send_notification("Calibration Complete")
 
         #Run EIS
@@ -83,12 +84,12 @@ class EISWindow:
 
 
     def show_temp(self):
-        self.temperature = 25
+        self.hardwaretemperature = 25
         if os.name == 'nt':
             pass
         else:
-            self.temperature = self.sensor.measure_temperature()
-            self.sensor.send_cmd('STANDBY')
+            self.temperature = self.hardware.sensor.measure_temperature()
+            self.hardware.sensor.send_cmd('STANDBY')
         
         self.Temperature_Widget = ctk.CTkLabel(self.toolbar_frame, text="Temperature: " + str(self.temperature) + " C")
         self.Temperature_Widget.pack(side=ctk.RIGHT, padx=10)

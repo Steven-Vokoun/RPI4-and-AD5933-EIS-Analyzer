@@ -11,6 +11,7 @@ except ImportError:
         ValueError("smbus2 library is not installed")
 
 
+
 class LTC6904:
     #DEFINITIONS
     LTC6904_ADDRESS = 0x17  # I2C address of the LTC6904
@@ -39,38 +40,96 @@ class LTC6904:
         LS = self.LTC6904_POWER_DOWN
         LTC6904.write_registers(MS, LS)
 
-class MUX:
-    def __init__(self, control_pins, size):
-        """
-        control_pins (list): List of GPIO pins
-        size (int): (1, 4, or 8)
-        USES BROADCOM NUMBERING
-        """
-        if size not in [1, 4, 8]:
-            raise ValueError("Size must be 1, 4, or 8")
-
-        self.control_pins = control_pins
-        self.size = size
-        self.num_control_pins = len(control_pins)
-
-        if 2 ** self.num_control_pins < self.size:
-            raise ValueError("Not enough control pins for the specified size")
-
+class Calibration_Mux:
+    def __init__(self):
+        pins = [9,10,22]  # 9 is A2, 10 A1, 22 A0
         GPIO.setmode(GPIO.BCM)
-        for pin in self.control_pins:
+        for pin in pins:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
+    def select_calibration(setting):
+        if setting == '10Meg' or setting == 0:
+            GPIO.output(9, GPIO.LOW)
+            GPIO.output(10, GPIO.LOW)
+            GPIO.output(22, GPIO.LOW)
+        elif setting == '1Meg' or setting == 1:
+            GPIO.output(9, GPIO.LOW)
+            GPIO.output(10, GPIO.LOW)
+            GPIO.output(22, GPIO.HIGH)
+        elif setting == '100k' or setting == 2:
+            GPIO.output(9, GPIO.LOW)
+            GPIO.output(10, GPIO.HIGH)
+            GPIO.output(22, GPIO.LOW)
+        elif setting == '10k' or setting == 3:
+            GPIO.output(9, GPIO.LOW)
+            GPIO.output(10, GPIO.HIGH)
+            GPIO.output(22, GPIO.HIGH)
+        elif setting == '100' or setting == 4:
+            GPIO.output(9, GPIO.HIGH)
+            GPIO.output(10, GPIO.LOW)
+            GPIO.output(22, GPIO.LOW)
+        elif setting == 'Randles' or setting == 5:
+            GPIO.output(9, GPIO.HIGH)
+            GPIO.output(10, GPIO.LOW)
+            GPIO.output(22, GPIO.HIGH)
+        elif setting == 'Counter0' or setting == 6:
+            GPIO.output(9, GPIO.HIGH)
+            GPIO.output(10, GPIO.HIGH)
+            GPIO.output(22, GPIO.LOW)
+        elif setting == 'Counter1' or setting == 7:
+            GPIO.output(9, GPIO.HIGH)
+            GPIO.output(10, GPIO.HIGH)
+            GPIO.output(22, GPIO.HIGH)
 
-    def select_channel(self, channel):
-        if channel < 0 or channel >= self.size:
-            raise ValueError(f"Channel must be between 0 and {self.size - 1}")
+class Output_Gain_Mux:
+    def __init__():
+        pins = [27,17]  # 27 is A1, 17 is A0
+        GPIO.setmode(GPIO.BCM)
+        for pin in pins:
+            GPIO.setup(pin, GPIO.OUT)
+            GPIO.output(pin, GPIO.LOW)
+    def select_gain(setting):
+        if setting == '1x' or setting == 0:
+            GPIO.output(27, GPIO.LOW)
+            GPIO.output(17, GPIO.LOW)
+        elif setting == '.1x' or setting == 1:
+            GPIO.output(27, GPIO.LOW)
+            GPIO.output(17, GPIO.HIGH)
+        elif setting == '.01x' or setting == 2:
+            GPIO.output(27, GPIO.HIGH)
+            GPIO.output(17, GPIO.LOW)
+        elif setting == '1x_uncorrected' or setting == 3:
+            GPIO.output(27, GPIO.HIGH)
+            GPIO.output(17, GPIO.HIGH)
 
-        # Format the channel to binary with leading zeros
-        binary_value = format(channel, f'0{self.num_control_pins}b')
+class Input_Gain_Mux:
+    def __init__():
+        pins = [24,23]  # 24 is A1, 23 is A0
+        GPIO.setmode(GPIO.BCM)
+        for pin in pins:
+            GPIO.setup(pin, GPIO.OUT)
+            GPIO.output(pin, GPIO.LOW)
+    def select_gain(setting):
+        if setting == '100x' or setting == 0:
+            GPIO.output(24, GPIO.LOW)
+            GPIO.output(23, GPIO.LOW)
+        elif setting == '10kx' or setting == 1:
+            GPIO.output(24, GPIO.LOW)
+            GPIO.output(23, GPIO.HIGH)
+        elif setting == '100kx' or setting == 2:
+            GPIO.output(24, GPIO.HIGH)
+            GPIO.output(23, GPIO.LOW)
+        elif setting == '1Mx' or setting == 3:
+            GPIO.output(24, GPIO.HIGH)
+            GPIO.output(23, GPIO.HIGH)
 
-        for i in range(len(self.control_pins)):
-            GPIO.output(self.control_pins[i], GPIO.HIGH if binary_value[i] == '1' else GPIO.LOW)
-
-    def cleanup(self):
-        GPIO.cleanup()
-
+class Electrode_Switch:
+    def __init__():
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(25, GPIO.OUT)
+        GPIO.output(25, GPIO.LOW)
+    def select_electrode(setting):
+        if setting == '2 Electrode' or setting == 0:
+            GPIO.output(25, GPIO.LOW)
+        elif setting == '3 Electrode' or setting == 1:
+            GPIO.output(25, GPIO.HIGH)
