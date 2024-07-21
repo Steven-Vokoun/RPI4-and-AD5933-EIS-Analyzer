@@ -272,7 +272,7 @@ class EISWindow:
         spacing_type = self.spacing_type.get()
         num_steps = int(self.step_size_slider.get())
         voltage = self.voltage.get()
-        calibrate_all(voltage, min_freq, max_freq, self.hardware_components, self.send_notification, num_steps, spacing_type)
+        calibrate_all(voltage, min_freq, max_freq, self.hardware, self.send_notification, num_steps, spacing_type)
 
     def start_experiment(self):
         if os.name == 'nt':
