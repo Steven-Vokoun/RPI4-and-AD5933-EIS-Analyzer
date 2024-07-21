@@ -153,6 +153,9 @@ def Adjust_Phase_Return_Phase(Freqs_Measured, real, imag, Freqs_Calibration, Sys
     return adjusted_phases
 
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
+
+    hardware.Electrode_Mux.select_electrode('3 Electrode')
+
     send_notification("Calibrating...")
     send_notification(str(voltage))
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)

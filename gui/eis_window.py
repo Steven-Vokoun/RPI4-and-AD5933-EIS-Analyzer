@@ -56,32 +56,31 @@ class EISWindow:
             self.Input_Gain_Mux = Input_Gain_Mux()
             self.Electrode_Mux = Electrode_Switch()
             self.Calibration_CLK = LTC6904()
-    '''
-        def Temporary_Test(self):
-            self.hardware.Calibration_Mux.select_calibration('Counter0')
-            self.hardware.Electrode_Mux.select_electrode('2 Electrode')
-            self.hardware.Output_Gain_Mux.select_gain('1x_uncorrected')
-            self.hardware.Input_Gain_Mux.select_gain('100kx')
-            self.hardware.sensor.set_output_voltage(1)
+    
+    def Temporary_Test(self):
+        self.hardware.Calibration_Mux.select_calibration('100k')
+        self.hardware.Electrode_Mux.select_electrode('3 Electrode')
+        self.hardware.Output_Gain_Mux.select_gain('1x_uncorrected')
+        self.hardware.Input_Gain_Mux.select_gain('10kx')
+        self.hardware.sensor.set_output_voltage(1)
 
-            #Calibration
-            max_freq = int(self.max_freq_slider.get())
-            min_freq = int(self.min_freq_slider.get())
-            num_steps = int(self.step_size_slider.get())
-            spacing_type = self.spacing_type.get()
-            self.send_notification("Calibrating EIS")
-            self.hardware.sensor.Calibration_Sweep(100_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
-            self.send_notification("Calibration Complete")
+        #Calibration
+        max_freq = int(self.max_freq_slider.get())
+        min_freq = int(self.min_freq_slider.get())
+        num_steps = int(self.step_size_slider.get())
+        spacing_type = self.spacing_type.get()
+        self.send_notification("Calibrating EIS")
+        self.hardware.sensor.Calibration_Sweep(100_000, min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.send_notification("Calibration Complete")
 
-            #Run EIS
-            max_freq = int(self.max_freq_slider.get())
-            min_freq = int(self.min_freq_slider.get())
-            spacing_type = self.spacing_type.get()
-            num_steps = int(self.step_size_slider.get())
-            self.freq_data, self.real_data, self.imag_data, self.phase = self.hardware.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
-            self.send_notification("Experiment Complete")
-            self.update_plot()
-    '''
+        #Run EIS
+        max_freq = int(self.max_freq_slider.get())
+        min_freq = int(self.min_freq_slider.get())
+        spacing_type = self.spacing_type.get()
+        num_steps = int(self.step_size_slider.get())
+        self.freq_data, self.real_data, self.imag_data, self.phase = self.hardware.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
+        self.send_notification("Experiment Complete")
+        self.update_plot()
 
     def show_temp(self):
         self.temperature = 25
@@ -115,8 +114,8 @@ class EISWindow:
         self.voltage_dropdown = ctk.CTkComboBox(self.calibrate_voltage_frame, variable=self.voltage, values=voltage_values, command=self.update_voltage)
         self.voltage_dropdown.pack(side=ctk.LEFT, padx=1)
 
-        #self.Temporary_Test_Button = ctk.CTkButton(self.calibrate_voltage_frame, text="Temporary Test", command=self.Temporary_Test)
-        #self.Temporary_Test_Button.pack(side=ctk.LEFT, pady=5, padx=10)
+        self.Temporary_Test_Button = ctk.CTkButton(self.calibrate_voltage_frame, text="Temporary Test", command=self.Temporary_Test)
+        self.Temporary_Test_Button.pack(side=ctk.LEFT, pady=5, padx=10)
 
     def setup_freq_and_spacing(self):
         self.freq_frame = ctk.CTkFrame(self.controls_frame)
