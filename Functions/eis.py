@@ -100,52 +100,97 @@ def export_to_usb(send_notification, frequencies, real, imaginary):
     except Exception as e:
         send_notification(f"Failed to write to CSV: {e}")
 
-def set_output_amplitude(voltage, sensor, Output_Gain_Mux):
-    if voltage == "2mV":
+def set_output_amplitude(voltage, sensor, Output_Gain_Mux, send_notification):
+    if voltage == "2mV" or voltage == '2' or voltage == 2:
         sensor.set_voltage_output(.2)
-        Output_Gain_Mux.select_channel(2)
-    elif voltage == "4mV":
+        Output_Gain_Mux.select_gain('.01x')
+    elif voltage == "4mV" or voltage == '4' or voltage == 4:
         sensor.set_voltage_output(.4)
-        Output_Gain_Mux.select_channel(2)
-    elif voltage == "10mV":
+        Output_Gain_Mux.select_gain('.01x')
+    elif voltage == "10mV" or voltage == '10' or voltage == 10:
         sensor.set_voltage_output(1)
-        Output_Gain_Mux.select_channel(2)
-    elif voltage == "20mV":
+        Output_Gain_Mux.select_gain('.01x')
+    elif voltage == "20mV" or voltage == '20' or voltage == 20:
         sensor.set_voltage_output(.2)
-        Output_Gain_Mux.select_channel(1)
-    elif voltage == "38mV":
+        Output_Gain_Mux.select_gain('.1x')
+    elif voltage == "38mV" or voltage == '38' or voltage == 38:
         sensor.set_voltage_output(.4)
-        Output_Gain_Mux.select_channel(1)
-    elif voltage == "100mV":
+        Output_Gain_Mux.select_gain('.1x')
+    elif voltage == "100mV" or voltage == '100' or voltage == 100:
         sensor.set_voltage_output(1)
-        Output_Gain_Mux.select_channel(1)
-    elif voltage == "200mV":
+        Output_Gain_Mux.select_gain('.1x')
+    elif voltage == "200mV" or voltage == '200' or voltage == 200:
         sensor.set_voltage_output(.2)
-        Output_Gain_Mux.select_channel(0)
-    elif voltage == "380mV":
+        Output_Gain_Mux.select_gain('1x')
+    elif voltage == "380mV" or voltage == '380' or voltage == 380:
         sensor.set_voltage_output(.4)
-        Output_Gain_Mux.select_channel(0)
-    elif voltage == "1V":
+        Output_Gain_Mux.select_gain('1x')
+    elif voltage == "1V" or voltage == '1000' or voltage == 1000:
         sensor.set_voltage_output(1)
-        Output_Gain_Mux.select_channel(0)
-    elif voltage == "2V":
+        Output_Gain_Mux.select_gain('1x')
+    elif voltage == "2V" or voltage == '2000' or voltage == 2000:
         sensor.set_voltage_output(2)
-        Output_Gain_Mux.select_channel(0)
+        Output_Gain_Mux.select_gain('1x')
     else:
-        print("Invalid voltage value")
+        send_notification("Invalid voltage value")
 
 
-def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification):
+def Adjust_Magnitude_Return_abs_Impedance(Freqs_Measured, real, imag, Freqs_Calibration, GainFactors):
+    if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
+        raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
+    Magnitudes_Measured = np.sqrt(real**2 + imag**2)
+    interpolated_gain_factors = np.interp(Freqs_Measured, Freqs_Calibration, GainFactors)
+    adjusted_magnitudes = [mag * gf for mag, gf in zip(Magnitudes_Measured, interpolated_gain_factors)]
+    adjusted_impedances = [1/mag for mag in adjusted_magnitudes]
+    return adjusted_impedances
+
+def Adjust_Phase_Return_Phase(Freqs_Measured, real, imag, Freqs_Calibration, Sys_Phases):
+    if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
+        raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
+    Phases_Measured = np.rad2deg(np.arctan2(imag,real))
+    interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
+    adjusted_phases = [phase - sys_phase for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
+    return adjusted_phases
+
+def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
     send_notification("Calibrating...")
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
-    freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep()
-    export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, Impedance)
+
+    impedances = [10e6, 1e6, 100e3, 10e3, 100]
+    for impedance in impedances:
+        hardware.Calibration_Mux.select_calibration(impedance)
+        freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, spacing_type)
+        export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, impedance)
+        send_notification("impedance", new_line=False)
     send_notification("Calibration complete")
 
-def conduct_experiment(hardware, send_notification, voltage, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
+def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic'):
     send_notification("Running EIS experiment...")
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
-    freqs, real, imag, Phase = hardware.sensor.Sweep_And_Adjust(start_freq, end_freq, num_steps, spacing_type)
+    freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
+    Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(voltage, estimated_impedance)
+
+    estimated_current = voltage/estimated_impedance
+    estimated_gain = None
+    gains = [100, 10e3, 100e3, 1e6]
+    for gain in gains:
+        if estimated_current * gain < 1:
+            estimated_gain = gain
+        else:
+            break
+    if estimated_gain is None:
+        send_notification("Unable to find suitable gain setting")
+    else:
+        send_notification(f"Estimated input gain setting: {estimated_gain}")
+    hardware.Output_Gain_Mux.select_gain(estimated_gain)
+
+    Magnitude = Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, Cal_Freqs, Gain_Factors)
+    Phase = Adjust_Phase_Return_Phase(freqs, real, imag, Cal_Freqs, Sys_Phases)
+    freqs = np.array(freqs)
+    Magnitude = np.array(Magnitude)
+    Phase = np.array(Phase)
+    real = Magnitude * np.cos(np.deg2rad(Phase))
+    imag = Magnitude * np.sin(np.deg2rad(Phase))
     return freqs, real, imag, Phase
 
 def export_calibration_data(self, freqs, gain_factors, sys_phases, voltage, Impedance):
@@ -156,3 +201,10 @@ def export_calibration_data(self, freqs, gain_factors, sys_phases, voltage, Impe
     file_name = f'{voltage}_{Impedance}.csv'
     file_path = os.path.join(folder_name, file_name)
     np.savetxt(file_path, data, delimiter=',')
+
+def import_calibration_data(voltage, impedance):
+    folder_name = 'calibration_data'
+    file_name = f'{voltage}_{impedance}.csv'
+    file_path = os.path.join(folder_name, file_name)
+    data = np.loadtxt(file_path, delimiter=',')
+    return data[0], data[1], data[2]

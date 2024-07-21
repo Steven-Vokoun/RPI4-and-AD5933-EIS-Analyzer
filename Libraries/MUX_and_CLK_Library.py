@@ -48,23 +48,23 @@ class Calibration_Mux:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
     def select_calibration(self, setting):
-        if setting == '10Meg' or setting == 0:
+        if setting == '10Meg' or setting == 10e6 or setting == 0:
             GPIO.output(9, GPIO.LOW)
             GPIO.output(10, GPIO.LOW)
             GPIO.output(22, GPIO.LOW)
-        elif setting == '1Meg' or setting == 1:
+        elif setting == '1Meg' or setting == 1e6 or setting == 1:
             GPIO.output(9, GPIO.LOW)
             GPIO.output(10, GPIO.LOW)
             GPIO.output(22, GPIO.HIGH)
-        elif setting == '100k' or setting == 2:
+        elif setting == '100k' or setting == 100e3 or setting == 2:
             GPIO.output(9, GPIO.LOW)
             GPIO.output(10, GPIO.HIGH)
             GPIO.output(22, GPIO.LOW)
-        elif setting == '10k' or setting == 3:
+        elif setting == '10k' or setting == 10e3 or setting == 3:
             GPIO.output(9, GPIO.LOW)
             GPIO.output(10, GPIO.HIGH)
             GPIO.output(22, GPIO.HIGH)
-        elif setting == '100' or setting == 4:
+        elif setting == '100' or setting == 100 or setting == 4:
             GPIO.output(9, GPIO.HIGH)
             GPIO.output(10, GPIO.LOW)
             GPIO.output(22, GPIO.LOW)
@@ -110,16 +110,16 @@ class Input_Gain_Mux:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
     def select_gain(self, setting):
-        if setting == '100x' or setting == 0:
+        if setting == '100x' or setting == 100 or setting == 0:
             GPIO.output(24, GPIO.LOW)
             GPIO.output(23, GPIO.LOW)
-        elif setting == '10kx' or setting == 1:
+        elif setting == '10kx' or setting == 10e3 or setting == 1:
             GPIO.output(24, GPIO.LOW)
             GPIO.output(23, GPIO.HIGH)
-        elif setting == '100kx' or setting == 2:
+        elif setting == '100kx' or setting == 100e3 or setting == 2:
             GPIO.output(24, GPIO.HIGH)
             GPIO.output(23, GPIO.LOW)
-        elif setting == '1Mx' or setting == 3:
+        elif setting == '1Mx' or setting == 1e6 or setting == 3:
             GPIO.output(24, GPIO.HIGH)
             GPIO.output(23, GPIO.HIGH)
 

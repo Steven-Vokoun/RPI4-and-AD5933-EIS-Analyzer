@@ -11,6 +11,7 @@ class MainApplication(ctk.CTk):
         self.geometry("800x480")
         self._set_appearance_mode("dark")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+        #self.attributes("-fullscreen", True)
 
         self.current_window = None
         self.previous_selection = "EIS"
@@ -20,11 +21,6 @@ class MainApplication(ctk.CTk):
         self.on_selection_change("EIS")
 
     def setup_main_frame(self):
-        self.title("Experiment GUI")
-        self.geometry("800x480")
-        self._set_appearance_mode("dark")
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
-        
         self.main_frame = ctk.CTkFrame(self)
         self.main_frame.pack(fill = ctk.BOTH, expand = True)
         self.readme_text_area = None
