@@ -262,7 +262,7 @@ class EISWindow:
         else:
             export_to_usb(self.send_notification, self.freq_data, self.real_data, self.imag_data)
     
-    def update_voltage(self):
+    def update_voltage(self, why):
         set_output_amplitude(self.voltage.get(), self.hardware.sensor, self.hardware.Output_Gain_Mux, self.send_notification)
 
     # Experiments

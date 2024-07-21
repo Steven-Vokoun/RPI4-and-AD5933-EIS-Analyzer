@@ -154,7 +154,7 @@ def Adjust_Phase_Return_Phase(Freqs_Measured, real, imag, Freqs_Calibration, Sys
 
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
     send_notification("Calibrating...")
-    send_notification(voltage)
+    send_notification(str(voltage))
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
 
     impedances = [10e6, 1e6, 100e3, 10e3, 100]
