@@ -159,6 +159,18 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
     impedances = [10e6, 1e6, 100e3, 10e3, 100]
     for impedance in impedances:
         hardware.Calibration_Mux.select_calibration(impedance)
+
+        estimated_current = voltage/impedance
+        estimated_gain = None
+        gains = [100, 10e3, 100e3, 1e6]
+        for gain in gains:
+            if estimated_current * gain < 1:
+                estimated_gain = gain
+            else:
+                break
+        if estimated_gain is None:
+            send_notification("Unable to find suitable gain setting")
+
         freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, spacing_type)
         export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, impedance)
         send_notification("impedance", new_line=False)
@@ -182,7 +194,7 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
         send_notification("Unable to find suitable gain setting")
     else:
         send_notification(f"Estimated input gain setting: {estimated_gain}")
-    hardware.Output_Gain_Mux.select_gain(estimated_gain)
+    hardware.Input_Gain_Mux.select_gain(estimated_gain)
 
     Magnitude = Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, Cal_Freqs, Gain_Factors)
     Phase = Adjust_Phase_Return_Phase(freqs, real, imag, Cal_Freqs, Sys_Phases)
