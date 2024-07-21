@@ -160,11 +160,11 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
     send_notification(str(voltage))
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
 
-    impedances = [1e6, 100e3, 10e3]
+    impedances = [100e3, 10e3]
     for impedance in impedances:
         hardware.Calibration_Mux.select_calibration(impedance)
         
-        estimated_current = voltage/impedance
+        estimated_current = (voltage/1000)/impedance
         estimated_gain = None
         gains = [100, 10e3, 100e3, 1e6]
         for gain in gains:
@@ -183,6 +183,11 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
     send_notification("Calibration complete")
 
 def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic'):
+    
+    ##Temporary
+    hardware.Calibration_Mux.select_calibration(estimated_impedance)
+    ##
+    
     send_notification("Running EIS experiment...")
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
     freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
