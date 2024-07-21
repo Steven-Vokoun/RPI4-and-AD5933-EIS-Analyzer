@@ -157,7 +157,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
     send_notification(str(voltage))
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
 
-    impedances = [10e6, 1e6, 100e3, 10e3, 100]
+    impedances = [1e6, 100e3, 10e3]
     for impedance in impedances:
         hardware.Calibration_Mux.select_calibration(impedance)
 
