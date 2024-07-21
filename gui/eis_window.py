@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib
 import os
 
-from Functions.eis import fit_eis_data, export_to_usb, run_demo_EIS_experiment, calibrate_all, set_output_amplitude
+from Functions.eis import fit_eis_data, export_to_usb, run_demo_EIS_experiment, calibrate_all, set_output_amplitude, conduct_experiment
 from Libraries.MUX_and_CLK_Library import Calibration_Mux, Output_Gain_Mux, Input_Gain_Mux, Electrode_Switch, LTC6904
 from Libraries.AD5933_Library import AD5933
 

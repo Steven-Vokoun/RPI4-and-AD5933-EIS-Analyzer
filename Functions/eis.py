@@ -145,8 +145,8 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification):
 def conduct_experiment(hardware, send_notification, voltage, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
     send_notification("Running EIS experiment...")
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
-    freqs, real, imag = hardware.sensor.EIS_Sweep(start_freq, end_freq, num_steps, spacing_type)
-    return freqs, real, imag
+    freqs, real, imag, Phase = hardware.sensor.Sweep_And_Adjust(start_freq, end_freq, num_steps, spacing_type)
+    return freqs, real, imag, Phase
 
 def export_calibration_data(self, freqs, gain_factors, sys_phases, voltage, Impedance):
     data = np.array([freqs, gain_factors, sys_phases])
