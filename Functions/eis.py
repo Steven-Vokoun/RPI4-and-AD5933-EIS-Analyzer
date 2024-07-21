@@ -163,7 +163,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
     impedances = [1e6, 100e3, 10e3]
     for impedance in impedances:
         hardware.Calibration_Mux.select_calibration(impedance)
-
+        
         estimated_current = voltage/impedance
         estimated_gain = None
         gains = [100, 10e3, 100e3, 1e6]
@@ -174,6 +174,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
                 break
         if estimated_gain is None:
             send_notification("Unable to find suitable gain setting")
+        send_notification(f"Estimated input gain setting: {estimated_gain}")
         hardware.Input_Gain_Mux.select_gain(estimated_gain)
 
         freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, spacing_type)
