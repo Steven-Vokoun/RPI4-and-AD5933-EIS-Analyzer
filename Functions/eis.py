@@ -154,7 +154,7 @@ def Adjust_Phase_Return_Phase(Freqs_Measured, real, imag, Freqs_Calibration, Sys
 
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
     send_notification("Calibrating...")
-    set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
+    set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
 
     impedances = [10e6, 1e6, 100e3, 10e3, 100]
     for impedance in impedances:
@@ -166,7 +166,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
 
 def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic'):
     send_notification("Running EIS experiment...")
-    set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux)
+    set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
     freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
     Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(voltage, estimated_impedance)
 

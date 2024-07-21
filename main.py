@@ -11,7 +11,7 @@ class MainApplication(ctk.CTk):
         self.geometry("800x480")
         self._set_appearance_mode("dark")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
-        self.attributes("-fullscreen", True)
+        self.attributes("-zoomed", True)
 
         self.current_window = None
         self.previous_selection = "EIS"
