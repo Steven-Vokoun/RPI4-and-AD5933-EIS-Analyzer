@@ -102,34 +102,34 @@ def export_to_usb(send_notification, frequencies, real, imaginary):
 
 def set_output_amplitude(voltage, sensor, Output_Gain_Mux, send_notification):
     if voltage == "2mV" or voltage == '2' or voltage == 2:
-        sensor.set_voltage_output(.2)
+        sensor.set_output_voltage(.2)
         Output_Gain_Mux.select_gain('.01x')
     elif voltage == "4mV" or voltage == '4' or voltage == 4:
-        sensor.set_voltage_output(.4)
+        sensor.set_output_voltage(.4)
         Output_Gain_Mux.select_gain('.01x')
     elif voltage == "10mV" or voltage == '10' or voltage == 10:
-        sensor.set_voltage_output(1)
+        sensor.set_output_voltage(1)
         Output_Gain_Mux.select_gain('.01x')
     elif voltage == "20mV" or voltage == '20' or voltage == 20:
-        sensor.set_voltage_output(.2)
+        sensor.set_output_voltage(.2)
         Output_Gain_Mux.select_gain('.1x')
     elif voltage == "38mV" or voltage == '38' or voltage == 38:
-        sensor.set_voltage_output(.4)
+        sensor.set_output_voltage(.4)
         Output_Gain_Mux.select_gain('.1x')
     elif voltage == "100mV" or voltage == '100' or voltage == 100:
-        sensor.set_voltage_output(1)
+        sensor.set_output_voltage(1)
         Output_Gain_Mux.select_gain('.1x')
     elif voltage == "200mV" or voltage == '200' or voltage == 200:
-        sensor.set_voltage_output(.2)
+        sensor.set_output_voltage(.2)
         Output_Gain_Mux.select_gain('1x')
     elif voltage == "380mV" or voltage == '380' or voltage == 380:
-        sensor.set_voltage_output(.4)
+        sensor.set_output_voltage(.4)
         Output_Gain_Mux.select_gain('1x')
     elif voltage == "1V" or voltage == '1000' or voltage == 1000:
-        sensor.set_voltage_output(1)
+        sensor.set_output_voltage(1)
         Output_Gain_Mux.select_gain('1x')
     elif voltage == "2V" or voltage == '2000' or voltage == 2000:
-        sensor.set_voltage_output(2)
+        sensor.set_output_voltage(2)
         Output_Gain_Mux.select_gain('1x')
     else:
         send_notification("Invalid voltage value")
