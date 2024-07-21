@@ -263,7 +263,7 @@ class EISWindow:
             export_to_usb(self.send_notification, self.freq_data, self.real_data, self.imag_data)
     
     def update_voltage(self):
-        self.set_output_amplitude(self.voltage.get(), self.hardware.sensor, self.hardware.Output_Gain_Mux, self.send_notification)
+        set_output_amplitude(self.voltage.get(), self.hardware.sensor, self.hardware.Output_Gain_Mux, self.send_notification)
 
     # Experiments
     def calibrate_experiment(self):
