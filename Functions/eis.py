@@ -195,7 +195,7 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
     impedance_values = {0: '100', 1: '10000', 2: '100000', 3: '1000000', 4: '10000000'}
     Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(voltage, impedance_values[estimated_impedance])
 
-    estimated_current = voltage/estimated_impedance
+    estimated_current = voltage/impedance_values[estimated_impedance]
     estimated_gain = None
     gains = [100, 10e3, 100e3, 1e6]
     for gain in gains:
