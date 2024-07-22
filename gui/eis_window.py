@@ -191,7 +191,7 @@ class EISWindow:
         self.step_size_slider.set(step_value)
 
     def update_impedance_label(self, value):
-        impedance_values = {0: '100', 1: '10k', 2: '100k', 3: '1Meg', 4: '100Meg'}
+        impedance_values = {0: '100', 1: '10k', 2: '100k', 3: '1Meg', 4: '10Meg'}
         step_value = int(value)
         self.impedance_value_label.configure(text=impedance_values[step_value])
         self.impedance_slider.set(step_value)
