@@ -178,7 +178,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
         hardware.Input_Gain_Mux.select_gain(estimated_gain)
 
         freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, spacing_type)
-        export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, impedance)
+        export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, int(impedance))
         send_notification("impedance", newline=False)
     send_notification("Calibration complete")
 
