@@ -179,7 +179,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
 
         freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, spacing_type)
         export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, impedance)
-        send_notification("impedance", new_line=False)
+        send_notification("impedance", newline=False)
     send_notification("Calibration complete")
 
 def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic'):
