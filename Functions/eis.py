@@ -216,7 +216,7 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
     imag = Magnitude * np.sin(np.deg2rad(Phase))
     return freqs, real, imag, Phase
 
-def export_calibration_data(self, freqs, gain_factors, sys_phases, voltage, Impedance):
+def export_calibration_data(freqs, gain_factors, sys_phases, voltage, Impedance):
     data = np.array([freqs, gain_factors, sys_phases])
     folder_name = 'calibration_data'
     if not os.path.exists(folder_name):
