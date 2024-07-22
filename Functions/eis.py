@@ -191,7 +191,9 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
     send_notification("Running EIS experiment...")
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
     freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
-    Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(voltage, estimated_impedance)
+
+    impedance_values = {0: '100', 1: '10k', 2: '100k', 3: '1Meg', 4: '100Meg'}
+    Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(voltage, impedance_values[estimated_impedance])
 
     estimated_current = voltage/estimated_impedance
     estimated_gain = None
