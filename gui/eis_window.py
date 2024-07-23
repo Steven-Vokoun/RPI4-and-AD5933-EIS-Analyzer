@@ -100,7 +100,7 @@ class EISWindow:
 
     def setup_plot(self):
         matplotlib.rcParams['font.size'] = 10
-        self.figure, self.ax = plt.subplots(figsize=(6, 3))
+        self.figure, self.ax = plt.subplots(figsize=(4, 3))
         self.figure.subplots_adjust(left=0.2)
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         self.canvas.get_tk_widget().pack(fill=ctk.BOTH, expand=True)
