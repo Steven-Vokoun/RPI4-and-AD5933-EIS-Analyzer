@@ -20,6 +20,7 @@ class EISWindow:
         self.spacing_type = ctk.StringVar(value="logarithmic")
         self.circuit_type = ctk.StringVar(value="Series RC")
         self.voltage = ctk.IntVar(value=100)
+        self.output_location = ctk.StringVar(value="Counter0")
 
         self.freq_data = None
         self.real_data = None
@@ -57,6 +58,7 @@ class EISWindow:
             self.Electrode_Mux = Electrode_Switch()
             self.Calibration_CLK = LTC6904()
     
+    '''
     def Temporary_Test(self):
         self.hardware.Calibration_Mux.select_calibration('100k')
         self.hardware.Electrode_Mux.select_electrode('3 Electrode')
@@ -81,6 +83,8 @@ class EISWindow:
         self.freq_data, self.real_data, self.imag_data, self.phase = self.hardware.sensor.Sweep_And_Adjust(min_freq, max_freq, num_steps, spacing_type=spacing_type)
         self.send_notification("Experiment Complete")
         self.update_plot()
+    '''
+
 
     def show_temp(self):
         self.temperature = 25
@@ -96,17 +100,17 @@ class EISWindow:
 
     def setup_plot(self):
         matplotlib.rcParams['font.size'] = 10
-        self.figure, self.ax = plt.subplots(figsize=(4, 4))
+        self.figure, self.ax = plt.subplots(figsize=(6, 3))
         self.figure.subplots_adjust(left=0.2)
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.plot_frame)
         self.canvas.get_tk_widget().pack(fill=ctk.BOTH, expand=True)
 
     def setup_calibrate_and_voltage(self):
         self.calibrate_voltage_frame = ctk.CTkFrame(self.controls_frame)
-        self.calibrate_voltage_frame.pack(pady=5, padx=5, anchor="n", fill=ctk.X)
+        self.calibrate_voltage_frame.pack(pady=3, padx=5, anchor="n", fill=ctk.X)
 
         self.calibrate_button = ctk.CTkButton(self.calibrate_voltage_frame, text="Calibrate EIS", command=self.calibrate_experiment)
-        self.calibrate_button.pack(side=ctk.LEFT, pady=5, padx=1)
+        self.calibrate_button.pack(side=ctk.LEFT, pady=3, padx=1)
 
         self.voltage_label = ctk.CTkLabel(self.calibrate_voltage_frame, text="Voltage (mV): ")
         self.voltage_label.pack(side=ctk.LEFT, padx=5)
@@ -114,8 +118,8 @@ class EISWindow:
         self.voltage_dropdown = ctk.CTkComboBox(self.calibrate_voltage_frame, variable=self.voltage, values=voltage_values, command=self.update_voltage)
         self.voltage_dropdown.pack(side=ctk.LEFT, padx=1)
 
-        self.Temporary_Test_Button = ctk.CTkButton(self.calibrate_voltage_frame, text="Temporary Test", command=self.Temporary_Test)
-        self.Temporary_Test_Button.pack(side=ctk.LEFT, pady=5, padx=10)
+        #self.Temporary_Test_Button = ctk.CTkButton(self.calibrate_voltage_frame, text="Temporary Test", command=self.Temporary_Test)
+        #self.Temporary_Test_Button.pack(side=ctk.LEFT, pady=3, padx=10)
 
     def setup_freq_and_spacing(self):
         self.freq_frame = ctk.CTkFrame(self.controls_frame)
@@ -198,23 +202,31 @@ class EISWindow:
 
     def setup_step_size_and_start(self):
         self.start_fitting_frame = ctk.CTkFrame(self.controls_frame)
-        self.start_fitting_frame.pack(pady=5, padx=10, anchor="n", fill=ctk.X)
+        self.start_fitting_frame.pack(pady=3, padx=10, anchor="n", fill=ctk.X)
 
         self.start_button = ctk.CTkButton(self.start_fitting_frame, text="Start EIS", command=self.start_experiment)
-        self.start_button.pack(side=ctk.LEFT, pady=5, padx=10, fill=ctk.X)
+        self.start_button.pack(side=ctk.LEFT, pady=3, padx=10, fill=ctk.X)
 
-        self.run_fitting_button = ctk.CTkButton(self.start_fitting_frame, text="Run Fitting", command=self.run_fitting)
-        self.run_fitting_button.pack(side=ctk.LEFT, pady=5, padx=10, fill=ctk.X)
+        locations = ['Counter0', 'Counter1', 'Randles', '100', '10k', '100k', '1Meg', '10Meg']
+        self.output_location_dropdown = ctk.CTkComboBox(self.start_fitting_frame, variable=self.output_location, values=locations)
+        self.output_location_dropdown.pack(side=ctk.LEFT, pady=3, padx=5, fill=ctk.X)
 
     def setup_circuit_and_fitting(self):
         self.circuit_type_frame = ctk.CTkFrame(self.controls_frame)
-        self.circuit_type_frame.pack(pady=5, padx=10, anchor="n", fill=ctk.X)
+        self.circuit_type_frame.pack(pady=3, padx=5, anchor="n", fill=ctk.X)
 
-        self.circuit_type_dropdown = ctk.CTkComboBox(self.circuit_type_frame, variable=self.circuit_type, values=["Series RC", "Parallel RC", "Randles", "Randles With CPE"])
-        self.circuit_type_dropdown.pack(side=ctk.LEFT, pady=5, padx=10)
+        self.left_frame = ctk.CTkFrame(self.circuit_type_frame)
+        self.left_frame.pack(side=ctk.LEFT, pady=3, padx=5)
 
-        self.params_display = ctk.CTkTextbox(self.circuit_type_frame, height=80, width=275)
-        self.params_display.pack(side=ctk.LEFT, pady=2, padx=10)
+        self.run_fitting_button = ctk.CTkButton(self.left_frame, text="Run Fitting", command=self.run_fitting)
+        self.run_fitting_button.pack(pady=3, padx=5, fill=ctk.X)
+
+        self.circuit_type_dropdown = ctk.CTkComboBox(self.left_frame, variable=self.circuit_type, values=["Series RC", "Parallel RC", "Randles", "Randles With CPE"])
+        self.circuit_type_dropdown.pack(pady=3, padx=5)
+
+        self.params_display = ctk.CTkTextbox(self.circuit_type_frame, height=80, width=250)
+        self.params_display.pack(side=ctk.LEFT, pady=2, padx=5)
+
 
     def setup_plot_and_params(self):
         self.plot_type = ctk.StringVar(value="mag_vs_freq")
@@ -238,10 +250,10 @@ class EISWindow:
 
     def setup_export_and_notification(self):
         self.export_frame = ctk.CTkFrame(self.controls_frame)
-        self.export_frame.pack(pady=5, padx=10, anchor="n", fill=ctk.X)
+        self.export_frame.pack(pady=3, padx=5, anchor="n", fill=ctk.X)
 
         self.export_button = ctk.CTkButton(self.export_frame, text="Export Data", command=self.export_data)
-        self.export_button.pack(side=ctk.LEFT, pady=5, padx=10)
+        self.export_button.pack(side=ctk.LEFT, pady=3, padx=5)
 
         self.notification_box = ctk.CTkTextbox(self.export_frame, height=80, width=275)
         self.notification_box.pack(side=ctk.LEFT, padx=2)
@@ -284,7 +296,8 @@ class EISWindow:
             num_steps = int(self.step_size_slider.get())
             voltage = self.voltage.get()
             estimated_impedance = self.impedance_slider.get()
-            self.freq_data, self.real_data, self.imag_data, self.phase = conduct_experiment(self.hardware, self.send_notification, voltage, estimated_impedance, min_freq, max_freq, num_steps, spacing_type)
+            output_location = self.output_location.get()
+            self.freq_data, self.real_data, self.imag_data, self.phase = conduct_experiment(self.hardware, self.send_notification, voltage, estimated_impedance, min_freq, max_freq, num_steps, spacing_type, output_location)
             self.update_plot()
 
     def run_fitting(self):

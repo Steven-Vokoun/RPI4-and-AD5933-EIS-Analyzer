@@ -160,7 +160,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
     send_notification(str(voltage))
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
 
-    impedances = [100e3, 10e3]
+    impedances = [10e6, 1e6, 100e3, 10e3, 100]
     for impedance in impedances:
         hardware.Calibration_Mux.select_calibration(impedance)
         
@@ -174,28 +174,32 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
                 break
         if estimated_gain is None:
             send_notification("Unable to find suitable gain setting")
-        send_notification(f"Estimated input gain setting: {estimated_gain}")
         hardware.Input_Gain_Mux.select_gain(estimated_gain)
 
+        
         freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, spacing_type)
+
+
         export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, int(impedance))
+
         send_notification("impedance", newline=False)
     send_notification("Calibration complete")
 
-def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic'):
-    
-    ##Temporary
-    hardware.Calibration_Mux.select_calibration(estimated_impedance)
-    ##
+def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic', output_location = 'Counter0'):
     
     send_notification("Running EIS experiment...")
+    hardware.Electrode_Mux.select_electrode('3 Electrode')
+    
+    #Set Calibration
+    hardware.Calibration_Mux.select_calibration(output_location)
+
+    #Set Output
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
-    freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
 
+    #Set Gain
     impedance_values = {0: '100', 1: '10000', 2: '100000', 3: '1000000', 4: '10000000'}
-    Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(voltage, impedance_values[estimated_impedance])
 
-    estimated_current = voltage/impedance_values[estimated_impedance]
+    estimated_current = (voltage/1000)/int(impedance_values[estimated_impedance])
     estimated_gain = None
     gains = [100, 10e3, 100e3, 1e6]
     for gain in gains:
@@ -209,6 +213,11 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
         send_notification(f"Estimated input gain setting: {estimated_gain}")
     hardware.Input_Gain_Mux.select_gain(estimated_gain)
 
+    #Run Experiment
+    freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
+
+    #Adjust Data
+    Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(voltage, impedance_values[estimated_impedance])
     Magnitude = Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, Cal_Freqs, Gain_Factors)
     Phase = Adjust_Phase_Return_Phase(freqs, real, imag, Cal_Freqs, Sys_Phases)
     freqs = np.array(freqs)

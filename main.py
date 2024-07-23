@@ -8,10 +8,11 @@ class MainApplication(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Experiment GUI")
+        self.overrideredirect(True)
         self.geometry("800x480")
         self._set_appearance_mode("dark")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
-        #self.attributes("-zoomed", True)
+        self.attributes('-fullscreen', True)
 
         self.current_window = None
         self.previous_selection = "EIS"
