@@ -286,6 +286,9 @@ class AD5933:
         else:
             raise ValueError('Invalid Frequency Spacing Type')
 
+        #Repeat first data point 3 times to get the lowpass filter to settle
+        for i in range(3):
+            self.run_freq_sweep(freqs[0])
         for freq in freqs:
             real, imag = self.run_freq_sweep(freq)
             real_data.append(real)
@@ -354,7 +357,10 @@ class AD5933:
             freqs = np.linspace(start_freq, end_freq, num=num_steps)
         else:
             raise ValueError('Invalid Frequency Spacing Type')
-
+        #Repeat first data point 3 times to get the lowpass filter to settle
+        for i in range(3):
+            self.run_freq_sweep(freqs[0])
+        #Run rest of the sweep
         for freq in freqs:
             gf, sys_phase = self.Calibrate_Single_Point(Impedance, freq)
             GainFactors.append(gf)
