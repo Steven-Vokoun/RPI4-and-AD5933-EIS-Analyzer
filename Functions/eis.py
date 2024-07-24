@@ -343,13 +343,14 @@ def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_noti
     return estimated_gain
 
 def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
-    estimated_current = (voltage / 1000) / gain
+    estimate = (voltage / 1000) * gain / 1.5
     impedances = [100, 10e3, 100e3, 1e6, 10e6]
     estimated_impedance = None
     
     for impedance in impedances:
-        if (voltage / 1000) / impedance < 1.5:
+        if estimate > impedance:
             estimated_impedance = impedance
+        else:
             break
     
     if estimated_impedance is None:
