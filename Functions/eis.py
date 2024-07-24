@@ -170,8 +170,6 @@ def Adjust_Phase_Return_Phase_single(Freq_Measured, real, imag, Freqs_Calibratio
     return adjusted_phase
 
 
-
-
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
 
     hardware.Electrode_Mux.select_electrode('3 Electrode')
@@ -230,9 +228,9 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
         freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
 
         #Adjust Data
-        Cal_Freqs, Gain_Factors, Sys_Phases = import_calibration_data(estimated_impedance)
-        Magnitude = Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, Cal_Freqs, Gain_Factors)
-        Phase = Adjust_Phase_Return_Phase(freqs, real, imag, Cal_Freqs, Sys_Phases)
+        cal_data = import_calibration_data(voltage, estimated_impedance)
+        Magnitude = Adjust_Magnitude_Return_abs_Impedance(freqs, real, imag, cal_data.Cal_Freqs, cal_data.Gain_Factors)
+        Phase = Adjust_Phase_Return_Phase(freqs, real, imag, cal_data.Cal_Freqs, cal_data.Sys_Phases)
         freqs = np.array(freqs)
         Magnitude = np.array(Magnitude)
         Phase = np.array(Phase)
@@ -309,23 +307,24 @@ def export_calibration_data(freqs, gain_factors, sys_phases, voltage, Impedance)
     file_path = os.path.join(folder_name, file_name)
     np.savetxt(file_path, data, delimiter=',')
 
-def import_calibration_data(voltage, impedance):
-    folder_name = 'calibration_data'
-    file_name = f'{voltage}_{impedance}.csv'
-    file_path = os.path.join(folder_name, file_name)
-    data = np.loadtxt(file_path, delimiter=',')
-    return data[0], data[1], data[2]
-
 class CalibrationData:
     def __init__(self, cal_freqs, gain_factors, sys_phases):
         self.Cal_Freqs = cal_freqs
         self.Gain_Factors = gain_factors
         self.Sys_Phases = sys_phases
 
+def import_calibration_data(voltage, impedance):
+    folder_name = 'calibration_data'
+    file_name = f'{voltage}_{impedance}.csv'
+    file_path = os.path.join(folder_name, file_name)
+    data = np.loadtxt(file_path, delimiter=',')
+    return CalibrationData(data[0], data[1], data[2])
+
 def import_all_calibration_data(voltage):
     calibration_data = {}
     for impedance in ['100', '10000', '100000', '1000000', '10000000']:
-        calibration_data[impedance] = import_calibration_data(voltage, impedance)
+        cal_data = import_calibration_data(voltage, impedance)
+        calibration_data[impedance] = CalibrationData(cal_data[0], cal_data[1], cal_data[2])
     return calibration_data
 
 def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_notification):
@@ -342,3 +341,21 @@ def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_noti
     else:
         send_notification(f"Estimated input gain setting: {estimated_gain}")
     return estimated_gain
+
+
+'''
+def import_calibration_data(voltage, impedance):
+    folder_name = 'calibration_data'
+    file_name = f'{voltage}_{impedance}.csv'
+    file_path = os.path.join(folder_name, file_name)
+    data = np.loadtxt(file_path, delimiter=',')
+    return data[0], data[1], data[2]
+
+def import_all_calibration_data(voltage):
+    calibration_data = {}
+    for impedance in ['100', '10000', '100000', '1000000', '10000000']:
+        calibration_data[impedance] = import_calibration_data(voltage, impedance)
+    return calibration_data
+'''
+
+
