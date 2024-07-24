@@ -21,6 +21,7 @@ class EISWindow:
         self.circuit_type = ctk.StringVar(value="Series RC")
         self.voltage = ctk.IntVar(value=100)
         self.output_location = ctk.StringVar(value="Counter0")
+        self.binary_search = ctk.BooleanVar(value=True)
 
         self.freq_data = None
         self.real_data = None
@@ -205,11 +206,14 @@ class EISWindow:
         self.start_fitting_frame.pack(pady=3, padx=10, anchor="n", fill=ctk.X)
 
         self.start_button = ctk.CTkButton(self.start_fitting_frame, text="Start EIS", command=self.start_experiment)
-        self.start_button.pack(side=ctk.LEFT, pady=3, padx=10, fill=ctk.X)
+        self.start_button.pack(side=ctk.LEFT, pady=3, padx=3, fill=ctk.X)
 
         locations = ['Counter0', 'Counter1', 'Randles', '100', '10k', '100k', '1Meg', '10Meg']
         self.output_location_dropdown = ctk.CTkComboBox(self.start_fitting_frame, variable=self.output_location, values=locations)
-        self.output_location_dropdown.pack(side=ctk.LEFT, pady=3, padx=5, fill=ctk.X)
+        self.output_location_dropdown.pack(side=ctk.LEFT, pady=3, padx=3, fill=ctk.X)
+
+        self.binary_search_checkbox = ctk.CTkCheckBox(self.start_fitting_frame, variable = self.binary_search, text="Auto Gain")
+        self.binary_search_checkbox.pack(side=ctk.LEFT, pady=3, padx=3)
 
     def setup_circuit_and_fitting(self):
         self.circuit_type_frame = ctk.CTkFrame(self.controls_frame)
@@ -297,7 +301,8 @@ class EISWindow:
             voltage = self.voltage.get()
             estimated_impedance = self.impedance_slider.get()
             output_location = self.output_location.get()
-            self.freq_data, self.real_data, self.imag_data, self.phase = conduct_experiment(self.hardware, self.send_notification, voltage, estimated_impedance, min_freq, max_freq, num_steps, spacing_type, output_location)
+            binary_search = self.binary_search.get()
+            self.freq_data, self.real_data, self.imag_data, self.phase = conduct_experiment(self.hardware, self.send_notification, voltage, estimated_impedance, min_freq, max_freq, num_steps, spacing_type, output_location, binary_search)
             self.update_plot()
 
     def run_fitting(self):
