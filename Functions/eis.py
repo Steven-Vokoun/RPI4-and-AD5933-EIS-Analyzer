@@ -349,9 +349,9 @@ def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
     
     for impedance in impedances:
         if estimate < impedance:
-            estimated_impedance = impedance
-        else:
             break
+        else:
+            estimated_impedance = impedance
     
     if estimated_impedance is None:
         send_notification("Unable to find suitable impedance setting")
