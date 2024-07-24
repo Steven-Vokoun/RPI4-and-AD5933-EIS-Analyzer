@@ -247,6 +247,7 @@ def binary_search_gain(hardware, send_notification, voltage, estimated_impedance
         real_temp, imag_temp = hardware.sensor.run_freq_sweep(freq)
     
         # Adjust the impedance with the calibration factor
+        estimated_impedance = find_impedance_from_voltage_and_gain(voltage, estimated_gain, send_notification)
         impedance = Adjust_Magnitude_Return_abs_Impedance_single(
             freq, real_temp, imag_temp, 
             calibration_data[str(estimated_impedance)].Cal_Freqs, 
@@ -340,6 +341,24 @@ def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_noti
     else:
         send_notification(f"Estimated input gain setting: {estimated_gain}")
     return estimated_gain
+
+def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
+    estimated_current = (voltage / 1000) / gain
+    impedances = [100, 10e3, 100e3, 1e6, 10e6]
+    estimated_impedance = None
+    
+    for impedance in impedances:
+        if (voltage / 1000) / impedance < 1.5:
+            estimated_impedance = impedance
+            break
+    
+    if estimated_impedance is None:
+        send_notification("Unable to find suitable impedance setting")
+    else:
+        send_notification(f"Estimated impedance setting: {estimated_impedance}")
+    
+    return estimated_impedance
+
 
 
 '''
