@@ -348,7 +348,7 @@ def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
     estimated_impedance = None
     
     for impedance in impedances:
-        if estimate > impedance:
+        if estimate < impedance:
             estimated_impedance = impedance
         else:
             break
