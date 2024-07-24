@@ -266,7 +266,7 @@ def binary_search_gain(hardware, send_notification, voltage, estimated_impedance
     real = impedance * np.cos(np.deg2rad(Phase))
     imag = impedance * np.sin(np.deg2rad(Phase))
 
-    return impedance, real_temp, imag_temp, Phase
+    return impedance, real, imag, Phase
 
 def conduct_binary_search_experiment(hardware, send_notification, voltage, impedance, start_freq, end_freq, num_steps, spacing_type):
     # Setup Frequencies of interest
@@ -280,22 +280,22 @@ def conduct_binary_search_experiment(hardware, send_notification, voltage, imped
     # Import Calibration Data
     calibration_data = import_all_calibration_data(voltage)
     
-    # Store results
-    real_results = []
-    imag_results = []
-    phase_results = []
+    # Initialize results arrays
+    real_results = np.zeros(num_steps)
+    imag_results = np.zeros(num_steps)
+    phase_results = np.zeros(num_steps)
 
-    #Repeat the first datapoint for settling
+    # Repeat the first datapoint for settling
     for _ in range(3):
         real_temp, imag_temp = hardware.sensor.run_freq_sweep(freqs[0])
 
     # Loop through each frequency
-    for freq in freqs:
+    for i, freq in enumerate(freqs):
         impedance, real_adjusted, imag_adjusted, Phase = binary_search_gain(
             hardware, send_notification, voltage, impedance, freq, calibration_data)
-        real_results.append(real_adjusted)
-        imag_results.append(imag_adjusted)
-        phase_results.append(Phase)
+        real_results[i] = real_adjusted
+        imag_results[i] = imag_adjusted
+        phase_results[i] = Phase
 
     return freqs, real_results, imag_results, phase_results
 
