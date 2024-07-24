@@ -357,8 +357,7 @@ def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
         send_notification("Unable to find suitable impedance setting")
     else:
         send_notification(f"Estimated impedance setting: {estimated_impedance}")
-    
-    estimated_impedance = 100000
+
     return int(estimated_impedance)
 
 
