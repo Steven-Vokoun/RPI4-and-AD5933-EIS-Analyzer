@@ -340,7 +340,7 @@ def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_noti
         send_notification("Unable to find suitable gain setting")
     else:
         send_notification(f"Estimated input gain setting: {estimated_gain}")
-    return estimated_gain
+    return int(estimated_gain)
 
 def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
     estimate = (voltage / 1000) * gain / 1.5
@@ -358,7 +358,7 @@ def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
     else:
         send_notification(f"Estimated impedance setting: {estimated_impedance}")
     
-    return estimated_impedance
+    return int(estimated_impedance)
 
 
 
