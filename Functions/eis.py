@@ -323,8 +323,7 @@ def import_calibration_data(voltage, impedance):
 def import_all_calibration_data(voltage):
     calibration_data = {}
     for impedance in ['100', '10000', '100000', '1000000', '10000000']:
-        cal_data = import_calibration_data(voltage, impedance)
-        calibration_data[impedance] = CalibrationData(cal_data[0], cal_data[1], cal_data[2])
+        calibration_data[impedance] = import_calibration_data(voltage, impedance)
     return calibration_data
 
 def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_notification):
