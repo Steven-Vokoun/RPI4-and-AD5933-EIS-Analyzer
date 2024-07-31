@@ -239,7 +239,7 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
 
     if binary_search == True:
         freqs, real, imag, Phase = conduct_binary_search_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps, spacing_type)
-
+        
     else:
         estimated_gain = find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_notification)
         hardware.Input_Gain_Mux.select_gain(estimated_gain)
@@ -356,10 +356,11 @@ def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_noti
         else:
             break
     if estimated_gain is None:
-        send_notification("Unable to find suitable gain setting")
+        send_notification("Unable to find suitable gain setting, Defaulting to 100k")
+        return int(100e3)
     else:
         send_notification(f"Estimated input gain setting: {estimated_gain}")
-    return int(estimated_gain)
+        return int(estimated_gain)
 
 def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
     estimate = (voltage / 1000) * gain * 5 / 1.5
@@ -373,11 +374,11 @@ def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
             estimated_impedance = impedance
     
     if estimated_impedance is None:
-        send_notification("Unable to find suitable impedance setting")
+        send_notification("Unable to find suitable impedance setting, Defaulting to 100k")
+        return int(100e3)
     else:
         send_notification(f"Estimated impedance setting: {estimated_impedance}")
-
-    return int(estimated_impedance)
+        return int(estimated_impedance)
 
 
 

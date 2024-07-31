@@ -86,7 +86,6 @@ class EISWindow:
         self.update_plot()
     '''
 
-
     def show_temp(self):
         self.temperature = 25
         if os.name == 'nt':

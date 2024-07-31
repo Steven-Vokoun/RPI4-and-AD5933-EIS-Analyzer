@@ -370,7 +370,7 @@ class AD5933:
             sys_phase = (sys_phase1 + sys_phase2 + sys_phase3) / 3
             GainFactors.append(gf)
             Sys_Phases.append(sys_phase)
-        self.export_calibration_data(freqs, GainFactors, Sys_Phases) #########
+        #self.export_calibration_data(freqs, GainFactors, Sys_Phases) #########
         return freqs, GainFactors, Sys_Phases
 
     def Adjust_Magnitude_Return_abs_Impedance(self, Freqs_Measured, real, imag, Freqs_Calibration, GainFactors):
@@ -392,6 +392,7 @@ class AD5933:
     
 
     # Adjustment Functions
+    '''
     def Sweep_And_Adjust(self, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
         freqs, real, imag = self.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
         Cal_Freqs, Gain_Factors, Sys_Phases = self.import_calibration_data()
@@ -410,4 +411,5 @@ class AD5933:
 
     def import_calibration_data(self):
         data = np.loadtxt('calibration_data.csv', delimiter=',')
-        return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases
+        return data[0], data[1], data[2]  #freqs, gain_factors, sys_phases    
+    '''
