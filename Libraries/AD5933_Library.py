@@ -290,6 +290,8 @@ class AD5933:
         for _ in range(3):
             self.run_freq_sweep(freqs[0])
         for freq in freqs:
+            _,_ = self.run_freq_sweep(freq)
+            _,_ = self.run_freq_sweep(freq)
             real, imag = self.run_freq_sweep(freq)
             real_data.append(real)
             imag_data.append(imag)
@@ -360,6 +362,7 @@ class AD5933:
             self.run_freq_sweep(freqs[0])
         #Run rest of the sweep
         for freq in freqs:
+            _, _ = self.Calibrate_Single_Point(Impedance, freq)
             gf1, sys_phase1 = self.Calibrate_Single_Point(Impedance, freq)
             gf2, sys_phase2 = self.Calibrate_Single_Point(Impedance, freq)
             gf3, sys_phase3 = self.Calibrate_Single_Point(Impedance, freq)
