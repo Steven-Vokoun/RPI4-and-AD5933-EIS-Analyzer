@@ -144,10 +144,10 @@ def Adjust_Magnitude_Return_abs_Impedance(Freqs_Measured, real, imag, Freqs_Cali
     adjusted_impedances = [1/mag for mag in adjusted_magnitudes]
     return adjusted_impedances
 
-def Adjust_Phase_Return_Phase(Freqs_Measured, real, imag, Freqs_Calibration, Sys_Phases):
+def Adjust_Phase_Return_Phase(Freqs_Measured, real_list, imag_list, Freqs_Calibration, Sys_Phases):
     if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
         raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
-    Phases_Measured = find_phase_arctan(real, imag)
+    Phases_Measured = find_phase_arctan_vectorized(real_list, imag_list)
     interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
     adjusted_phases = [phase - sys_phase for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
     return adjusted_phases
@@ -169,6 +169,12 @@ def Adjust_Phase_Return_Phase_single(Freq_Measured, real, imag, Freqs_Calibratio
     adjusted_phase = Phase_Measured - interpolated_sys_phase
     return adjusted_phase
 
+def find_phase_arctan_vectorized(real_list, imag_list):
+    real_array = np.array(real_list)
+    imag_array = np.array(imag_list)
+    vectorized_find_phase_arctan = np.vectorize(find_phase_arctan)
+    return vectorized_find_phase_arctan(real_array, imag_array)
+
 def find_phase_arctan(real, imag):
     if real > 0 and imag > 0:
         return (np.arctan(imag/real))*(180/np.pi)
@@ -181,11 +187,13 @@ def find_phase_arctan(real, imag):
     else:
         ValueError('Invalid Input')
 
+
+
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
 
     hardware.Electrode_Mux.select_electrode('3 Electrode')
 
-    send_notification("Calibrating...")
+    send_notification('Calibrating...')
     send_notification(str(voltage))
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
 
@@ -197,7 +205,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
         estimated_gain = None
         gains = [100, 10e3, 100e3, 1e6]
         for gain in gains:
-            if estimated_current * gain < 1.5:  #~~VCC/2
+            if estimated_current * gain * 5 < 1.5:  #~~VCC/2
                 estimated_gain = gain
             else:
                 break
@@ -343,7 +351,7 @@ def find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_noti
     estimated_gain = None
     gains = [100, 10e3, 100e3, 1e6]
     for gain in gains:
-        if estimated_current * gain < 1.5:
+        if estimated_current * gain * 5 < 1.5:
             estimated_gain = gain
         else:
             break

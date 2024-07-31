@@ -42,6 +42,7 @@ class LTC6904:
 
 class Calibration_Mux:
     def __init__(self):
+        GPIO.setwarnings(False)
         pins = [9,10,22]  # 9 is A2, 10 A1, 22 A0
         GPIO.setmode(GPIO.BCM)
         for pin in pins:
