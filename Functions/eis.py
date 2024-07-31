@@ -191,7 +191,7 @@ def find_phase_arctan(real, imag):
 
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
 
-    hardware.Electrode_Mux.select_electrode('3 Electrode')
+    hardware.Electrode_Mux.select_electrode('2 Electrode')
 
     send_notification('Calibrating...')
     send_notification(str(voltage))
@@ -225,7 +225,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
 def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic', output_location = 'Counter0', binary_search = True):
     
     send_notification("Running EIS experiment...")
-    hardware.Electrode_Mux.select_electrode('3 Electrode')
+    hardware.Electrode_Mux.select_electrode('2 Electrode')
 
     #Set Calibration
     hardware.Calibration_Mux.select_calibration(output_location)
