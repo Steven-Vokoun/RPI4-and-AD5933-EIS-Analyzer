@@ -19,7 +19,7 @@ class EISWindow:
 
         self.spacing_type = ctk.StringVar(value="logarithmic")
         self.circuit_type = ctk.StringVar(value="Series RC")
-        self.voltage = ctk.IntVar(value=100)
+        self.voltage = ctk.IntVar(value=1000)
         self.output_location = ctk.StringVar(value="Counter0")
         self.binary_search = ctk.BooleanVar(value=True)
 
