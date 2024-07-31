@@ -147,7 +147,7 @@ def Adjust_Magnitude_Return_abs_Impedance(Freqs_Measured, real, imag, Freqs_Cali
 def Adjust_Phase_Return_Phase(Freqs_Measured, real, imag, Freqs_Calibration, Sys_Phases):
     if any(f < min(Freqs_Calibration) or f > max(Freqs_Calibration) for f in Freqs_Measured):
         raise ValueError("One or more measured frequencies fall outside the calibration frequency range.")
-    Phases_Measured = np.rad2deg(np.arctan2(imag,real))
+    Phases_Measured = find_phase_arctan(real, imag)
     interpolated_sys_phases = np.interp(Freqs_Measured, Freqs_Calibration, Sys_Phases)
     adjusted_phases = [phase - sys_phase for phase, sys_phase in zip(Phases_Measured, interpolated_sys_phases)]
     return adjusted_phases
@@ -164,11 +164,22 @@ def Adjust_Magnitude_Return_abs_Impedance_single(Freq_Measured, real, imag, Freq
 def Adjust_Phase_Return_Phase_single(Freq_Measured, real, imag, Freqs_Calibration, Sys_Phases):
     if Freq_Measured < min(Freqs_Calibration) or Freq_Measured > max(Freqs_Calibration):
         raise ValueError("The measured frequency falls outside the calibration frequency range.")
-    Phase_Measured = np.rad2deg(np.arctan2(imag, real))
+    Phase_Measured = find_phase_arctan(real, imag)
     interpolated_sys_phase = np.interp(Freq_Measured, Freqs_Calibration, Sys_Phases)
     adjusted_phase = Phase_Measured - interpolated_sys_phase
     return adjusted_phase
 
+def find_phase_arctan(real, imag):
+    if real > 0 and imag > 0:
+        return (np.arctan(imag/real))*(180/np.pi)
+    elif real < 0 and imag > 0:
+        return 180 + (np.arctan(imag/real))*(180/np.pi)
+    elif real < 0 and imag < 0:
+        return 180 + (np.arctan(imag/real))*(180/np.pi)
+    elif real > 0 and imag < 0:
+        return 360 + (np.arctan(imag/real))*(180/np.pi)
+    else:
+        ValueError('Invalid Input')
 
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
 
@@ -200,7 +211,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
 
         export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, int(impedance))
 
-        send_notification("impedance", newline=False)
+        send_notification(impedance, newline=False)
     send_notification("Calibration complete")
 
 def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic', output_location = 'Counter0', binary_search = True):
@@ -286,7 +297,7 @@ def conduct_binary_search_experiment(hardware, send_notification, voltage, imped
     phase_results = np.zeros(num_steps)
 
     # Repeat the first datapoint for settling
-    for _ in range(3):
+    for _ in range(5):
         real_temp, imag_temp = hardware.sensor.run_freq_sweep(freqs[0])
 
     # Loop through each frequency
