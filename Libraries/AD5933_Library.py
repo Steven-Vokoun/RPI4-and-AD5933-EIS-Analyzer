@@ -102,7 +102,7 @@ class AD5933:
         self.set_clock_source(clk_source)
         self.set_pga_gain(PGA_Gain)
         self.set_increment_number(0)
-        self.set_settling_time_cycles(1000)
+        self.set_settling_time_cycles(2000)
 
     # I2C Functions
     def write_register(self, reg, value):
