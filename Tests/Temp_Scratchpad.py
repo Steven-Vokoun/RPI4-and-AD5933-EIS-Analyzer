@@ -1,6 +1,7 @@
+freq_reg = int((100000 * (2**27)) / (16.6e6 / 4))
+freq_reg = freq_reg.to_bytes(3, 'big')
 
-
-
+print(freq_reg)
 
 
 

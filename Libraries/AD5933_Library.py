@@ -206,6 +206,7 @@ class AD5933:
     
     def set_start_frequency(self, freq):
         freq_reg = int((freq * (2**27)) / (self.clk / 4))
+        print(freq, freq_reg)
         freq_reg = freq_reg.to_bytes(3, 'big')
         self.write_registers(FREQ_MIN_REG2, freq_reg)
     
