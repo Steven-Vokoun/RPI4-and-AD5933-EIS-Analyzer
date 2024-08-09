@@ -290,7 +290,7 @@ class AD5933:
         for _ in range(3):
             self.run_freq_sweep(freqs[0])
         for freq in freqs:
-            self.clk_adjustment(hardware, freqs[0])
+            self.clk_adjustment(hardware, freq)
             _,_ = self.run_freq_sweep(freq)
             _,_ = self.run_freq_sweep(freq)
             real, imag = self.run_freq_sweep(freq)
