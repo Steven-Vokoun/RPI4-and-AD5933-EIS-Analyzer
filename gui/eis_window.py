@@ -57,7 +57,7 @@ class EISWindow:
             self.Output_Gain_Mux = Output_Gain_Mux()
             self.Input_Gain_Mux = Input_Gain_Mux()
             self.Electrode_Mux = Electrode_Switch()
-            self.Calibration_CLK = LTC6904()
+            self.CLK = LTC6904()
     
     '''
     def Temporary_Test(self):
@@ -130,8 +130,8 @@ class EISWindow:
         self.min_freq_frame.pack(fill=ctk.X)
         self.min_freq_label = ctk.CTkLabel(self.min_freq_frame, text="Min Frequency:")
         self.min_freq_label.pack(side=ctk.LEFT, padx=5)
-        self.min_freq_slider = ctk.CTkSlider(self.min_freq_frame, from_=1000, to=20000, command=self.update_min_freq_label)
-        self.min_freq_slider.set(10000)
+        self.min_freq_slider = ctk.CTkSlider(self.min_freq_frame, from_=10, to=20000, command=self.update_min_freq_label)
+        self.min_freq_slider.set(1000)
         self.min_freq_slider.pack(side=ctk.LEFT, padx=5, fill=ctk.X, expand=True)
         self.min_freq_value_label = ctk.CTkLabel(self.min_freq_frame, text=f"{self.min_freq_slider.get()}", width=50)
         self.min_freq_value_label.pack(side=ctk.LEFT, padx=2)

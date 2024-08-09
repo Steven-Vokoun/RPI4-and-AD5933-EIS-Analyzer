@@ -208,12 +208,10 @@ class AD5933:
         freq_reg = int((freq * (2**27)) / (self.clk / 4))
         freq_reg = freq_reg.to_bytes(3, 'big')
         self.write_registers(FREQ_MIN_REG2, freq_reg)
-
-    def set_increment_frequency(self, freq):
-        freq_reg = int((freq * (2**27)) / (self.clk / 4))
-        freq_reg = freq_reg.to_bytes(3, 'big')
-        self.write_registers(FREQ_INC_REG2, freq_reg)
     
+    def set_clk_variable(self, sys_clk):
+        self.clk = sys_clk
+
     def set_increment_number(self, num):
         num = num.to_bytes(2, 'big')
         self.write_registers(INC_NUM_REG1, num)
@@ -275,7 +273,7 @@ class AD5933:
         self.poll_status_register('real_imag')
         return self.get_impedance_data() #Return the real and imaginary data
 
-    def Complete_Sweep(self, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
+    def Complete_Sweep(self, start_freq, end_freq, num_steps, hardware, spacing_type='logarithmic'):
         real_data = []
         imag_data = []        
         
@@ -287,9 +285,11 @@ class AD5933:
             raise ValueError('Invalid Frequency Spacing Type')
 
         #Repeat first data point 3 times to get the lowpass filter to settle
+        self.clk_adjustment(hardware, freqs[0])
         for _ in range(3):
             self.run_freq_sweep(freqs[0])
         for freq in freqs:
+            self.clk_adjustment(hardware, freqs[0])
             _,_ = self.run_freq_sweep(freq)
             _,_ = self.run_freq_sweep(freq)
             real, imag = self.run_freq_sweep(freq)
@@ -347,7 +347,7 @@ class AD5933:
         Sys_Phase = Sys_Phase - Impedance_Phase
         return GainFactor, Sys_Phase
 
-    def Calibration_Sweep(self, Impedance, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
+    def Calibration_Sweep(self, Impedance, start_freq, end_freq, num_steps, hardware, spacing_type='logarithmic'):
         GainFactors = []
         Sys_Phases = []
 
@@ -358,10 +358,12 @@ class AD5933:
         else:
             raise ValueError('Invalid Frequency Spacing Type')
         #Repeat first data point 3 times to get the lowpass filter to settle
+        self.clk_adjustment(hardware, freqs[0])
         for i in range(3):
             self.run_freq_sweep(freqs[0])
         #Run rest of the sweep
         for freq in freqs:
+            self.clk_adjustment(hardware, freq)
             _, _ = self.Calibrate_Single_Point(Impedance, freq)
             gf1, sys_phase1 = self.Calibrate_Single_Point(Impedance, freq)
             gf2, sys_phase2 = self.Calibrate_Single_Point(Impedance, freq)
@@ -391,7 +393,19 @@ class AD5933:
         return adjusted_phases
     
 
-    # Adjustment Functions
+    def clk_adjustment(self, hardware, frequency):
+        # 10k min frequency, 16M clk
+        # scale clk by factor of 1600
+        # assume factor of 1000 for a little higher range
+
+        # LTC6904 min is 1khz -> 68khz
+        # theoretical limit is .5hz
+        sys_clk = frequency * 1000
+        if sys_clk > 16.6e6:
+            sys_clk = 16.6e6
+        self.clk = sys_clk
+        hardware.CLK.Turn_On_Clock(sys_clk)
+
     '''
     def Sweep_And_Adjust(self, start_freq, end_freq, num_steps, spacing_type='logarithmic'):
         freqs, real, imag = self.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)

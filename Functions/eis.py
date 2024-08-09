@@ -191,8 +191,12 @@ def find_phase_arctan(real, imag):
 
 def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, num_steps, spacing_type):
 
+    ##setup hardware
     hardware.Electrode_Mux.select_electrode('2 Electrode')
+    hardware.sensor.set_clock_source('external')
+    clk_adjustment(hardware, 100e3)
 
+    ## run
     send_notification('Calibrating...')
     send_notification(str(voltage))
     set_output_amplitude(voltage, hardware.sensor, hardware.Output_Gain_Mux, send_notification)
@@ -214,7 +218,7 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
         hardware.Input_Gain_Mux.select_gain(estimated_gain)
 
         
-        freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, spacing_type)
+        freqs, GainFactors, Sys_Phases = hardware.sensor.Calibration_Sweep(impedance, start_freq, end_freq, num_steps, hardware, spacing_type)
 
 
         export_calibration_data(freqs, GainFactors, Sys_Phases, voltage, int(impedance))
@@ -225,7 +229,11 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
 def conduct_experiment(hardware, send_notification, voltage, estimated_impedance, start_freq, end_freq, num_steps = 100, spacing_type='logarithmic', output_location = 'Counter0', binary_search = True):
     
     send_notification("Running EIS experiment...")
+
+    ## setup hardware
     hardware.Electrode_Mux.select_electrode('2 Electrode')
+    hardware.sensor.set_clock_source('external')
+    clk_adjustment(hardware, 100e3)
 
     #Set Calibration
     hardware.Calibration_Mux.select_calibration(output_location)
@@ -244,7 +252,7 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
         estimated_gain = find_gain_from_voltage_and_Impedance(voltage, estimated_impedance, send_notification)
         hardware.Input_Gain_Mux.select_gain(estimated_gain)
         #Run Experiment
-        freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, spacing_type)
+        freqs, real, imag = hardware.sensor.Complete_Sweep(start_freq, end_freq, num_steps, hardware, spacing_type)
 
         #Adjust Data
         cal_data = import_calibration_data(voltage, estimated_impedance)
@@ -380,6 +388,20 @@ def find_impedance_from_voltage_and_gain(voltage, gain, send_notification):
         send_notification(f"Estimated impedance setting: {estimated_impedance}")
         return int(estimated_impedance)
 
+
+def clk_adjustment(hardware, frequency):
+    # 10k min frequency, 16M clk
+    # scale clk by factor of 1600
+    # assume factor of 1000 for a little higher range
+
+    # LTC6904 min is 1khz -> 68khz
+    # theoretical limit is .5hz
+    sys_clk = frequency * 1000
+    if sys_clk > 16.6e6:
+        sys_clk = 16.6e6
+
+    hardware.CLK.Turn_On_Clock(sys_clk)
+    hardware.sensor.set_clk_variable(sys_clk)
 
 
 '''
