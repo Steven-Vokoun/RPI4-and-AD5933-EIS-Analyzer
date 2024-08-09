@@ -401,9 +401,12 @@ class AD5933:
 
         # LTC6904 min is 1khz -> 68khz
         # theoretical limit is .5hz
-        sys_clk = frequency * 1000
-        if sys_clk > 16.776e6:
+        if frequency < 10e3:
+            sys_clk = frequency * 1000
+            self.set_clock_source('external')
+        else:
             sys_clk = 16.776e6
+            self.set_clock_source('internal')
         self.clk = sys_clk
         hardware.CLK.Turn_On_Clock(sys_clk)
 

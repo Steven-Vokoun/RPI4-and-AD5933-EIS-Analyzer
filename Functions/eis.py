@@ -193,8 +193,6 @@ def calibrate_all(voltage, start_freq, end_freq, hardware, send_notification, nu
 
     ##setup hardware
     hardware.Electrode_Mux.select_electrode('2 Electrode')
-    hardware.sensor.set_clock_source('external')
-    clk_adjustment(hardware, 100e3)
 
     ## run
     send_notification('Calibrating...')
@@ -232,8 +230,6 @@ def conduct_experiment(hardware, send_notification, voltage, estimated_impedance
 
     ## setup hardware
     hardware.Electrode_Mux.select_electrode('2 Electrode')
-    hardware.sensor.set_clock_source('external')
-    clk_adjustment(hardware, 100e3)
 
     #Set Calibration
     hardware.Calibration_Mux.select_calibration(output_location)
