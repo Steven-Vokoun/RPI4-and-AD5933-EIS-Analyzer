@@ -397,8 +397,8 @@ def clk_adjustment(hardware, frequency):
     # LTC6904 min is 1khz -> 68khz
     # theoretical limit is .5hz
     sys_clk = frequency * 1000
-    if sys_clk > 16.6e6:
-        sys_clk = 16.6e6
+    if sys_clk > 16.776e6:
+        sys_clk = 16.776e6
 
     hardware.CLK.Turn_On_Clock(sys_clk)
     hardware.sensor.set_clk_variable(sys_clk)

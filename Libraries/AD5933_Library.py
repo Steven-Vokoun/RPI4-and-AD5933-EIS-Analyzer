@@ -206,7 +206,7 @@ class AD5933:
     
     def set_start_frequency(self, freq):
         freq_reg = int((freq * (2**27)) / (self.clk / 4))
-        print(freq, freq_reg)
+        print(freq, freq_reg, self.clk)
         freq_reg = freq_reg.to_bytes(3, 'big')
         self.write_registers(FREQ_MIN_REG2, freq_reg)
     
@@ -402,8 +402,8 @@ class AD5933:
         # LTC6904 min is 1khz -> 68khz
         # theoretical limit is .5hz
         sys_clk = frequency * 1000
-        if sys_clk > 16.6e6:
-            sys_clk = 16.6e6
+        if sys_clk > 16.776e6:
+            sys_clk = 16.776e6
         self.clk = sys_clk
         hardware.CLK.Turn_On_Clock(sys_clk)
 
