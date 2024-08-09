@@ -33,12 +33,12 @@ class LTC6904:
         DAC = 2048 - int((2078 * (2 ** (10+OCT))) / frequency)
         MS = OCT << 4 | DAC >> 4
         LS = DAC << 4 | self.LTC6904_CLK_ON_CLK_INV_OFF
-        LTC6904.write_registers(MS, LS)
+        self.write_registers(MS, LS)
 
     def Turn_Off_Clock(self):
         MS = 0x00
         LS = self.LTC6904_POWER_DOWN
-        LTC6904.write_registers(MS, LS)
+        self.write_registers(MS, LS)
 
 class Calibration_Mux:
     def __init__(self):
