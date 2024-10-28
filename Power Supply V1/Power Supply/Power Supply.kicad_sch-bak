@@ -1,0 +1,16 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "c1934b90-0eec-4be2-aa86-3233042d6672")
+	(paper "USLetter")
+	(title_block
+		(title "Power Supply Board Independent Study")
+	)
+	(lib_symbols)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
