@@ -53,10 +53,6 @@ class MainApplication(ctk.CTk):
             self.current_window.destroy()
         if selection == "EIS":
             self.current_window = EISWindow(self.plot_frame, self.controls_frame, self.button_frame, self.toolbar_frame)
-        elif selection == "CV":
-            self.current_window = CVWindow(self.plot_frame, self.controls_frame, self.button_frame, self.toolbar_frame)
-        elif selection == "Time":
-            self.current_window = TimeWindow(self.plot_frame, self.controls_frame, self.button_frame, self.toolbar_frame)
 
     def open_readme(self):
         if self.current_window:
