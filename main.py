@@ -1,8 +1,6 @@
 import customtkinter as ctk
 import os
 from gui.eis_window import EISWindow
-from gui.cv_window import CVWindow
-from gui.time_window import TimeWindow
 
 class MainApplication(ctk.CTk):
     def __init__(self):
@@ -29,12 +27,6 @@ class MainApplication(ctk.CTk):
     def setup_toolbar(self):
         self.toolbar_frame = ctk.CTkFrame(self.main_frame)
         self.toolbar_frame.grid(row=0, column=0, columnspan=2, sticky="ew")
-
-        label = ctk.CTkLabel(self.toolbar_frame, text="Select Experiment:")
-        label.pack(side=ctk.LEFT, padx=10)
-
-        self.dropdown = ctk.CTkComboBox(self.toolbar_frame, values=["EIS", "CV", "Time"], command=self.on_selection_change)
-        self.dropdown.pack(side=ctk.LEFT, padx=10)
 
         readme_button = ctk.CTkButton(self.toolbar_frame, text="Open README", command=self.open_readme)
         readme_button.pack(side=ctk.LEFT, padx=10)
